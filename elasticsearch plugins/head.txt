@@ -1,0 +1,4 @@
+elasticsearch-head is a web front end for browsing and interacting with an Elastic Search cluster.
+
+elasticsearch/bin/plugin install mobz/elasticsearch-head
+open http://localhost:9200/_plugin/head/
