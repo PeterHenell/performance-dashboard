@@ -2,17 +2,16 @@ import time
 
 
 class DataCollector:
-    def __init__(self, collect, transform, mapping):
+    def __init__(self, collect, transform, initialize):
         self.collect = collect
         self.transform = transform
-        self.mapping = mapping
+        self.initialize = initialize
 
-    def init_index(self, es_api, ):
-        es_api.create_index()
-        es_api.set_mapping(self.mapping)
+    def init_index(self, es_api):
+        self.initialize(es_api)
 
     def run(self):
-        data = self.f()
+        data = self.collect()
         self.transform(data)
 
         time.sleep(1000)
