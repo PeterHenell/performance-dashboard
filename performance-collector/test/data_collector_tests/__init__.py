@@ -25,7 +25,7 @@ def mock_initialize():
 class MyTestCase(unittest.TestCase):
     def test_something(self):
         DataCollector(mock_collect, mock_transform, mock_initialize)
-        self.assertEqual(True, False)
+        self.assertEqual(True, False, 'Not done yet')
 
 
 if __name__ == '__main__':
