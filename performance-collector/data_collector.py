@@ -2,10 +2,13 @@ import time
 
 
 class DataCollector:
-    def __init__(self, collect, data_key_col):
-        self.collect = collect
+    def __init__(self, collect_fun, data_key_col):
+        self.collect = collect_fun
         self.cache = []
         self.data_key_col = data_key_col
+
+    @staticmethod
+    def from_query(qyery_text, key_column):
 
     def find_row_in_cache_by_key(self, key):
         if len(self.cache) > 0:
@@ -22,9 +25,12 @@ class DataCollector:
             cached_row = self.find_row_in_cache_by_key(row[self.data_key_col])
             if cached_row is not None:
                 row_delta = {}
+                # Calculate only delta for each value which is not the key column
                 non_key_data = {key: val for (key, val) in row.items() if key != self.data_key_col}
+                # Add the key column with the row key value
                 row_delta[self.data_key_col] = row[self.data_key_col]
                 for key, val in non_key_data.items():
+                    # delta is the diff between the new value and the previous value
                     row_delta[key] = val - cached_row[key]
                 deltas.append(row_delta)
         self.cache = data
