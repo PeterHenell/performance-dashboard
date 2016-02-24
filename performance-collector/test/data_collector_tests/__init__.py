@@ -10,21 +10,24 @@ db = DatabaseAccess(config)
 
 
 def mock_collect():
-    print('Collect')
-    return [{'Col': 1, 'Colb': 2}]
+    collect = [{'Col': 1, 'total_ms': mock_collect.counter, 'total_bytes': mock_collect.counter * 100}]
+    print('Collect: %s' % collect)
+    mock_collect.counter += 2
+    return collect
 
-
-def mock_transform(data):
-    return data
-
-
-def mock_initialize():
-    pass
+mock_collect.counter = 0
 
 
 class MyTestCase(unittest.TestCase):
     def test_something(self):
-        DataCollector(mock_collect, mock_transform, mock_initialize)
+        collector = DataCollector(mock_collect, 'Col')
+
+        delta1 = collector.get_delta()
+        self.assertEquals(delta1, [])
+
+        delta2 = collector.get_delta()
+        self.assertEquals(delta2, [{'Col': 1, 'total_ms': 2, 'total_bytes': 200}])
+
         self.assertEqual(True, False, 'Not done yet')
 
 
