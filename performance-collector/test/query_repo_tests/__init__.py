@@ -9,7 +9,7 @@ config = manager.get_config('localhost.master')
 db = DatabaseAccess(config)
 
 
-class PerformanceStatisticsTestCase(unittest.TestCase):
+class QueryRepoTestCase(unittest.TestCase):
     def test_wait_stats_available(self):
         waits = db.get_records(QueryStore.get_query_text('dm_os_wait_stats'))
         first = waits[0]

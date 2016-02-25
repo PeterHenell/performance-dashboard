@@ -8,7 +8,8 @@ class DataCollector:
         self.data_key_col = data_key_col
 
     @staticmethod
-    def from_query(qyery_text, key_column):
+    def from_query(db, query_text, key_column):
+        return DataCollector(lambda: db.get_records(query_text), key_column)
 
     def find_row_in_cache_by_key(self, key):
         if len(self.cache) > 0:

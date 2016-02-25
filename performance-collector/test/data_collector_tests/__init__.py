@@ -10,8 +10,8 @@ config = manager.get_config('localhost.master')
 db = DatabaseAccess(config)
 
 
-def db_collector():
-    return db.get_records(QueryStore.get_query_text('dm_io_virtual_file_stats'))
+# def db_collector():
+#     return db.get_records(QueryStore.get_query_text('dm_io_virtual_file_stats'))
 
 
 def mock_collect():
@@ -36,7 +36,7 @@ def multirow_mock_collect():
 multirow_mock_collect.counter = 0
 
 
-class MyTestCase(unittest.TestCase):
+class DataCollectorTestCase(unittest.TestCase):
     def test_delta_calculation(self):
         collector = DataCollector(mock_collect, 'Col')
 
@@ -59,18 +59,7 @@ class MyTestCase(unittest.TestCase):
             {'Col': 3, 'total_ms': 12, 'total_bytes': 1200}
         ])
 
-    def test_should_get_collector_based_on_query(self):
-        collector = DataCollector(db_collector, 'file_id')
 
-        delta1 = collector.get_delta()
-        self.assertEquals(delta1, [])
-
-        delta2 = collector.get_delta()
-        actual = [key for (key, value) in delta2[0].items()]
-        expected = ['num_of_writes', 'size_on_disk_bytes', 'file_id', 'num_of_reads', 'num_of_bytes_read',
-                    'io_stall_queued_read_ms', 'num_of_bytes_written', 'io_stall',
-                    'io_stall_queued_write_ms', 'io_stall_read_ms', 'io_stall_write_ms']
-        self.assertListEqual(expected, actual)
 
 
 if __name__ == '__main__':

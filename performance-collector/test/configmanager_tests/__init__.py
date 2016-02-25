@@ -7,7 +7,7 @@ manager = ConfigManager.from_file('test.ini')
 config = Configuration(manager.get_config('Elasticsearch'))
 
 
-class RecordFormatterTestCase(unittest.TestCase):
+class ConfigManagerTestCase(unittest.TestCase):
 
     def test_should_get_config_values(self):
         self.assertEqual('stat-statements', config.index)

@@ -9,7 +9,7 @@ config = manager.get_config('localhost.master')
 db = DatabaseAccess(config)
 
 
-class ConnectTestCase(unittest.TestCase):
+class DbManagerTestCase(unittest.TestCase):
 
     def test_should_connect_to_db(self):
 
