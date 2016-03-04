@@ -8,8 +8,8 @@ from data_collector import DataCollector
 
 class CollectionManager:
 
-    def __init__(self, db, query_list):
-        self.queries = query_list
+    def __init__(self, db, query_dict):
+        self.queries = query_dict
         self.collectors = []
         self.db = db
         for name, q in self.queries.items():
@@ -21,7 +21,7 @@ class CollectionManager:
         for c in self.collectors:
             delta = c.get_delta()
             if len(delta) > 0:
-                result.append({c.query_name: delta})
+                result.append({'query_name': c.query_name, 'delta': delta})
         return result
 
     # def do_work(self, task):
