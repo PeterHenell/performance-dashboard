@@ -38,7 +38,7 @@ multirow_mock_collect.counter = 0
 
 class DataCollectorTestCase(unittest.TestCase):
     def test_delta_calculation(self):
-        collector = DataCollector(mock_collect, 'Col')
+        collector = DataCollector(mock_collect, 'Col', 'Query name here')
 
         delta1 = collector.get_delta()
         self.assertEquals(delta1, [])
@@ -47,7 +47,8 @@ class DataCollectorTestCase(unittest.TestCase):
         self.assertEquals(delta2, [{'Col': 1, 'total_ms': 2, 'total_bytes': 200}])
 
     def test_delta_calculation_on_multiple_rows(self):
-        collector = DataCollector(multirow_mock_collect, 'Col')
+        collector = DataCollector(multirow_mock_collect, 'Col', 'Name of the query')
+        self.assertEquals(collector.query_name, 'Name of the query')
 
         delta1 = collector.get_delta()
         self.assertEquals(delta1, [])

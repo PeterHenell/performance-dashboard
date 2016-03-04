@@ -2,14 +2,15 @@ import time
 
 
 class DataCollector:
-    def __init__(self, collect_fun, data_key_col):
+    def __init__(self, collect_fun, data_key_col, query_name):
         self.collect = collect_fun
         self.cache = []
         self.data_key_col = data_key_col
+        self.query_name = query_name
 
     @staticmethod
-    def from_query(db, query_text, key_column):
-        return DataCollector(lambda: db.get_records(query_text), key_column)
+    def from_query(db, query_name, query_text, key_column):
+        return DataCollector(lambda: db.get_records(query_text), key_column, query_name)
 
     def find_row_in_cache_by_key(self, key):
         if len(self.cache) > 0:
@@ -19,7 +20,13 @@ class DataCollector:
         return None
 
     def get_delta(self):
+        # TODO: Log logger.info(self.query_name starting collection...)
         data = self.collect()
+        # TODO: Get data grouped by key column
+        # if a is the key column and we have two measurements in two rows
+        # [{a: key1, v1: 1 bytes},
+        #  {a: key1, v2: 2ms } ]
+        # Should result in one record {a: key1, v1: 1 bytes, v2: 2ms}
         # grouped_data = self.get_grouped(data, self.data_key_col)
         deltas = []
         for row in data:
@@ -37,6 +44,11 @@ class DataCollector:
         self.cache = data
         return deltas
 
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.query_name == other.query_name
+
+    def __ne__(self, other):
+        return not self.__eq__(other)
 
 # import threading
 # from queue import Queue
