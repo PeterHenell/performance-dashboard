@@ -32,7 +32,7 @@ class StatCollector:
         print('Recorded: %s' % recorded_data)
         if len(recorded_data) > 0:
             enhanced_data = self.enhance(recorded_data, timestamp)
-            print('Enhanced: %s' % (enhanced_data))
+            print('Enhanced: %s' % enhanced_data)
             for records in enhanced_data:
                 self.api.consume_to_index(records['delta'], self.db.db_name, records['query_name'])
 

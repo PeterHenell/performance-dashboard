@@ -44,7 +44,7 @@ class StatsCollectorTests(unittest.TestCase):
                    'query_name 2': {'sql_text': 'mocked query 2', 'key_col': 'mocked_key_col'}}
         db = MockDb()
         es = MockElasticSearchAPI()
-        config_manager = ConfigManager.from_file('test.ini')
+        # config_manager = ConfigManager.from_file('test.ini')
         sc = StatCollector(es, db, queries)
 
         sc.run()
