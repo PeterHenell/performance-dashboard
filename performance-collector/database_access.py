@@ -10,6 +10,7 @@ class DatabaseAccess:
 
     def __init__(self, config):
         self.conn = self.get_connection(config)
+        self.db_name = config['database']
 
     @staticmethod
     def get_connection(config):

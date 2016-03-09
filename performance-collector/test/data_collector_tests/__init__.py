@@ -29,7 +29,7 @@ def multirow_mock_collect():
         {'Col': 2, 'total_ms': multirow_mock_collect.counter * 2, 'total_bytes': multirow_mock_collect.counter * 200},
         {'Col': 3, 'total_ms': multirow_mock_collect.counter * 3, 'total_bytes': multirow_mock_collect.counter * 300}
     ]
-    print('Collect: %s' % collect)
+    # print('Collect: %s' % collect)
     multirow_mock_collect.counter += 4
     return collect
 
