@@ -2,11 +2,10 @@
 <module type="PYTHON_MODULE" version="4">
   <component name="NewModuleRootManager">
     <content url="file://$MODULE_DIR$" />
-    <orderEntry type="jdk" jdkName="Python 3.5.1 virtualenv at E:\Source\github\performance-dashboard\performance-collector\v-env" jdkType="Python SDK" />
+    <orderEntry type="jdk" jdkName="Python 3.5.1 virtualenv at E:\Source\github\performance-dashboard\perf-coll-env" jdkType="Python SDK" />
     <orderEntry type="sourceFolder" forTests="false" />
   </component>
   <component name="TestRunnerService">
-    <option name="projectConfiguration" value="py.test" />
-    <option name="PROJECT_TEST_RUNNER" value="py.test" />
+    <option name="PROJECT_TEST_RUNNER" value="Unittests" />
   </component>
 </module>

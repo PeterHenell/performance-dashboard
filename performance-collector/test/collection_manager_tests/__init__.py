@@ -21,17 +21,17 @@ class MockDb:
         self.records = records
 
     def get_records(self, query):
-        if query != 'mocked query':
-            raise Exception('query parameter was not passed to the get_records function')
-        return self.records.pop(0)
+        # print(self.records)
+        # print(self.records[query])
+        return self.records[query].pop(0)
 
 
 class CollectionManagerTestCase(unittest.TestCase):
     def test_from_query(self):
-        mock_db = MockDb([
-            [{'mocked_key_col': 1, 'total_bytes': 23}],
-            [{'mocked_key_col': 1, 'total_bytes': 58}]
-        ])
+        mock_db = MockDb({'mocked query': [
+                             [{'mocked_key_col': 1, 'total_bytes': 23}],
+                             [{'mocked_key_col': 1, 'total_bytes': 58}]
+                          ]})
         collector = DataCollector.from_query(mock_db,
                                              'this is a query name',
                                              'mocked query',
@@ -44,10 +44,10 @@ class CollectionManagerTestCase(unittest.TestCase):
         self.assertListEqual(delta2, [{'mocked_key_col': 1, 'total_bytes': 35}])
 
     def test_should_create_collectors_for_all_queries(self):
-        mock_db = MockDb([
-            [{'mocked_key_col': 1, 'total_bytes': 23}],
-            [{'mocked_key_col': 1, 'total_bytes': 58}]
-        ])
+        mock_db = MockDb({
+            'sql 1': [[{'mocked_key_col': 1, 'total_bytes': 23}]],
+            'sql 2': [[{'mocked_key_col': 1, 'total_bytes': 58}]]
+        })
         queries = {'query name1': {'sql_text': 'sql 1', 'key_col': 'cola'},
                    'query_name 2': {'sql_text': 'sql 2', 'key_col': 'col k'}}
         collection_manager = CollectionManager(mock_db, queries)
@@ -59,14 +59,17 @@ class CollectionManagerTestCase(unittest.TestCase):
         self.assertEquals(q2.data_key_col, 'col k')
 
     def test_should_collect_data_from_all_queries(self):
-        mock_db = MockDb([
-            [{'mocked_key_col': 1, 'total_bytes': 23}],
-            [{'mocked_key_col': 2, 'total_bytes': 58}],
-            [{'mocked_key_col': 1, 'total_bytes': 23}],
-            [{'mocked_key_col': 2, 'total_bytes': 58}]
-        ])
+        mock_db = MockDb(
+                {'mocked query': [
+                    [{'mocked_key_col': 1, 'total_bytes': 44}],
+                    [{'mocked_key_col': 1, 'total_bytes': 58}],
+                ],
+                 'mocked query 2': [
+                    [{'mocked_key_col': 2, 'total_bytes': 23}],
+                    [{'mocked_key_col': 2, 'total_bytes': 58}]
+                ]})
         queries = {'query name1': {'sql_text': 'mocked query', 'key_col': 'mocked_key_col'},
-                   'query_name 2': {'sql_text': 'mocked query', 'key_col': 'mocked_key_col'}}
+                   'query_name 2': {'sql_text': 'mocked query 2', 'key_col': 'mocked_key_col'}}
         collection_manager = CollectionManager(mock_db, queries)
 
         delta = collection_manager.collect_data()
@@ -79,8 +82,10 @@ class CollectionManagerTestCase(unittest.TestCase):
         query1_delta = find(lambda d: d['query_name'] == 'query name1', big_delta)
         query2_delta = find(lambda d: d['query_name'] == 'query_name 2', big_delta)
 
-        self.assertEqual({'query_name': 'query name1', 'delta': [{'total_bytes': 0, 'mocked_key_col': 1}]}, query1_delta)
-        self.assertEqual({'query_name': 'query_name 2', 'delta': [{'total_bytes': 0, 'mocked_key_col': 2}]}, query2_delta)
+        expected1 = {'query_name': 'query name1', 'delta': [{'total_bytes': 14, 'mocked_key_col': 1}]}
+        expected2 = {'query_name': 'query_name 2', 'delta': [{'total_bytes': 35, 'mocked_key_col': 2}]}
+        self.assertEqual(expected1, query1_delta)
+        self.assertEqual(expected2, query2_delta)
 
     def test_should_initialize_from_QueryStore(self):
         mock_db = MockDb([
