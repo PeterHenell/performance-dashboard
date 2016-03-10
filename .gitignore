@@ -62,4 +62,4 @@ target/
 .ipynb_checkpoints
 prerequisites/kibana-4.4.1-windows/
 prerequisites/elasticsearch-2.2.0/
-performance-collector/.idea/
+
