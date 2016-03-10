@@ -1,4 +1,6 @@
 from query_store import QueryStore
+from elastic_api import ElasticAPI
+from database_access import DatabaseAccess
 from collection_manager import CollectionManager
 import logging
 
@@ -16,45 +18,44 @@ class StatCollector:
         self.db = db_api
 
         self.collection_manager = CollectionManager(self.db, queries)
-
-        # targets = self.config_manager.get_target_databases()
-        # for db_name, db_config_key in targets:
-        #     db_config = self.config_manager.get_config(db_config_key)
-        #     #     TODO: Handle case when config key is not in config file
-        #     for query_name, query_text in QueryStore.get_queries().items():
+        # for query_name, query_text in queries.items():
         #         self.initialize_elasticsearch(db_name, query_name)
+
+    @staticmethod
+    def from_config_manager(config_manager, queries, es_class=ElasticAPI, db_class=DatabaseAccess):
+        stat_collectors = []
+        targets = config_manager.get_target_databases()
+        es_api = es_class(config_manager)
+        for db_name, db_config_key in targets:
+            #     TODO: Handle case when config key is not in config file
+            db_config = config_manager.get_config(db_config_key)
+            db = db_class(db_config)
+            sc = StatCollector(es_api, db, queries)
+            stat_collectors.append(sc)
+        return stat_collectors
 
     def run(self):
         # TODO: Logging instead of print
-        from time import strftime
-        timestamp = strftime("%Y-%m-%d %H:%M:%S")
+        from datetime import datetime
+        timestamp = datetime.now().strftime("%Y-%m-%dT%H:%M:%S")
         recorded_data = self.collection_manager.collect_data()
-        print('Recorded: %s' % recorded_data)
         if len(recorded_data) > 0:
-            enhanced_data = self.enhance(recorded_data, timestamp)
-            print('Enhanced: %s' % enhanced_data)
-            for records in enhanced_data:
-                self.api.consume_to_index(records['delta'], self.db.db_name, records['query_name'])
+            # enhanced_data = self.enhance(recorded_data, timestamp)
+            # print('Enhanced: %s' % enhanced_data)
+            for records in recorded_data:
+                self.api.consume_to_index(records, self.db.db_name, records['query_name'], timestamp)
+            # self.api.consume_to_index(enhanced_data, self.db.db_name, enhanced_data[0]['query_name'])
 
-    def initialize_elasticsearch(self, db_name, query_name):
-        self.api.create_index(db_name, query_name)
-        # TODO: If the data get jumbled in ES we might need to set the mapping for each query (doc type)
-        # self.api.set_mapping()
+    def initialize_elasticsearch(self, index_name, query_name):
+        self.api.create_index(index_name)
+        self.api.set_mapping(index_name, query_name)
 
-    def enhance(self, recorded_data, timestamp):
-        enhanced_data = []
-        for query in recorded_data:
-            for d in query['delta']:
-                d['measured_at'] = timestamp
-                enhanced_data.append({'query_name': query['query_name'], 'delta': d})
-        return enhanced_data
-
-    def cleanup(self):
-        targets = self.config_manager.get_target_databases()
+    def cleanup(self, config_manager):
+        targets = config_manager.get_target_databases()
         for db_name, db_config_key in targets:
-            db_config = self.config_manager.get_config(db_config_key)
             #     TODO: Handle case when config key is not in config file
-            for query_name, query_text in QueryStore.get_queries().items():
-                (hist, snap) = self.api.get_index_names(db_name, query_name)
-                self.api.delete_index(hist)
-                self.api.delete_index(snap)
+            a_db_name = config_manager.get_config(db_config_key)['database']
+            for query_name, query_text in QueryStore.queries.items():
+                index_name = self.api.get_index_names(a_db_name, query_name)
+                self.api.delete_index(index_name)
+                self.initialize_elasticsearch(index_name, query_name)

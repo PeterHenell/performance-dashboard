@@ -1,7 +1,9 @@
 from config_manager import ConfigManager
+from query_store import QueryStore
 from stats_collector import StatCollector
 import sys
 import logging
+import time
 
 __author__ = "Peter Henell"
 __copyright__ = "Copyright 2016, Peter Henell"
@@ -37,15 +39,16 @@ def main(arguments):
 
     config_manager = ConfigManager.from_file(settings_file)
     config_manager.set_logging()
-    application_config = config_manager.get_config('performance-collector')
 
-    stats_collector = StatCollector(config_manager)
+    stat_collectors = StatCollector.from_config_manager(config_manager, QueryStore.queries)
+    for stat_collector in stat_collectors:
+        if len(arguments) == 2:
+            if arguments[1] == 'truncate_data':
+                stat_collector.cleanup(config_manager)
 
-    if len(arguments) == 2:
-        if arguments[1] == 'truncate_data':
-            stats_collector.cleanup()
-
-    stats_collector.run()
+        while True:
+            stat_collector.run()
+            time.sleep(15)
 
 
 if __name__ == '__main__':

@@ -14,18 +14,6 @@ class Configuration:
     def __getitem__(self, key):
         return self.config[key]
 
-    @property
-    def index(self):
-        return self['index']
-
-    @property
-    def doc_type(self):
-        return self['doc_type']
-
-    @property
-    def snapshot_index(self):
-        return self['snapshot_index']
-
 
 class ConfigManager:
 

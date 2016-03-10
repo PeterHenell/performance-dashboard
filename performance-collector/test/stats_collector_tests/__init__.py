@@ -6,7 +6,7 @@ from stats_collector import StatCollector
 
 
 class MockDb:
-    def __init__(self):
+    def __init__(self, config_manager=None):
         self.records = {'mocked query': [
             [{'mocked_key_col': 1, 'total_bytes': 44}],
             [{'mocked_key_col': 1, 'total_bytes': 58}],
@@ -22,7 +22,7 @@ class MockDb:
 
 
 class MockElasticSearchAPI:
-    def __init__(self):
+    def __init__(self, config_manager=None):
         self.records = {}
         self.db_name = ''
         self.query_name = ''
@@ -52,6 +52,14 @@ class StatsCollectorTests(unittest.TestCase):
 
         sc.run()
         self.assertEqual(2, len(sc.api.records), 'Second run should have the delta of the two queries')
+
+    def test_should_create_statCollectors_from_config(self):
+        config_manager = ConfigManager.from_file('test.ini')
+        queries = {'query name1': {'sql_text': 'mocked query', 'key_col': 'mocked_key_col'},
+                   'query_name 2': {'sql_text': 'mocked query 2', 'key_col': 'mocked_key_col'}}
+
+        stat_collectors = StatCollector.from_config_manager(config_manager, queries, MockElasticSearchAPI, MockDb)
+        self.assertEquals(len(stat_collectors), 2)
 
 
 if __name__ == '__main__':

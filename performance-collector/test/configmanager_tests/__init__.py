@@ -9,11 +9,6 @@ config = Configuration(manager.get_config('Elasticsearch'))
 
 class ConfigManagerTestCase(unittest.TestCase):
 
-    def test_should_get_config_values(self):
-        self.assertEqual('stat-statements', config.index)
-        self.assertEqual('statement', config.doc_type)
-        self.assertEqual('statement', config['doc_type'])
-
     def test_should_get_target_databases(self):
         actual = manager.get_target_databases()
         expected = [('database1', 'localhost.master'), ('database2', 'localhost.master'), ]
