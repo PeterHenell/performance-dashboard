@@ -27,7 +27,9 @@ class MockElasticSearchAPI:
         self.db_name = ''
         self.query_name = ''
 
-    def consume_to_index(self, records, index, doc_type):
+    def consume_to_index(self, records, db_name, query_name, timestamp):
+        index = 'hist-%s-%s' % (db_name, query_name)
+        doc_type = query_name + '_type'
         print('ElasticMock consume_to_index: %s.%s [%s]' % (index, doc_type, records))
         self.records[index + doc_type] = records
 

@@ -40,8 +40,10 @@ class DataCollector:
                 for key, val in non_key_data.items():
                     # delta is the diff between the new value and the previous value
                     delta_value = val - cached_row[key]
-                    if row_delta != 0:
-                        row_delta[key] = delta_value
+                    # If the new value for some reason is less than the old value (happens after restarts)
+                    if delta_value < 0:
+                        delta_value = 0
+                    row_delta[key] = delta_value
                 deltas.append(row_delta)
         self.cache = data
         return deltas
