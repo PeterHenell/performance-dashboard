@@ -40,11 +40,10 @@ class StatCollector:
         timestamp = datetime.now().strftime("%Y-%m-%dT%H:%M:%S")
         recorded_data = self.collection_manager.collect_data()
         if len(recorded_data) > 0:
-            # enhanced_data = self.enhance(recorded_data, timestamp)
-            # print('Enhanced: %s' % enhanced_data)
+            # recorded data is list of lists{of documents}
             for records in recorded_data:
                 self.api.consume_to_index(records, self.db.db_name, records['query_name'], timestamp)
-            # self.api.consume_to_index(enhanced_data, self.db.db_name, enhanced_data[0]['query_name'])
+
 
     def initialize_elasticsearch(self, index_name, query_name):
         self.api.create_index(index_name)

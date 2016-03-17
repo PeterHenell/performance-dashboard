@@ -92,7 +92,6 @@ class ElasticAPI:
     def delete_index(self, index_name):
         logger.info('Truncating data in index: %s' % index_name)
         self.es.indices.delete(index=index_name, ignore=404)
-        self.es.indices.refresh()
 
     def get_index_names(self, db_name, query_name):
         hist = 'hist-%s-%s' % (db_name, query_name)

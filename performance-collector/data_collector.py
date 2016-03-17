@@ -35,16 +35,21 @@ class DataCollector:
                 row_delta = {}
                 # Calculate only delta for each value which is not the key column
                 non_key_data = {key: val for (key, val) in row.items() if key != self.data_key_col}
-                # Add the key column with the row key value
-                row_delta[self.data_key_col] = row[self.data_key_col]
                 for key, val in non_key_data.items():
                     # delta is the diff between the new value and the previous value
                     delta_value = val - cached_row[key]
                     # If the new value for some reason is less than the old value (happens after restarts)
                     if delta_value < 0:
                         delta_value = 0
-                    row_delta[key] = delta_value
-                deltas.append(row_delta)
+                    # Only collect values that are meaningful
+                    if delta_value > 0:
+                        row_delta[key] = delta_value
+
+                # Only append row deltas which contain any data.
+                # If the delta_row have data, we also add the key column
+                if len(row_delta.keys()) > 0:
+                    row_delta[self.data_key_col] = row[self.data_key_col]
+                    deltas.append(row_delta)
         self.cache = data
         return deltas
 
