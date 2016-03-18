@@ -147,7 +147,21 @@ class QueryStore:
 
                 FROM @partition_stats;
                """, 'key_col': 'partition_key'
-                                   }
+                                   },
+               "active_sessions": {'sql_text': """
+                SELECT session_id ,
+                       cpu_time ,
+                       memory_usage ,
+                       total_scheduled_time ,
+                       total_elapsed_time ,
+                       last_request_duration_seconds = DATEDIFF(SECOND, last_request_start_time, last_request_end_time),
+                       reads ,
+                       writes ,
+                       logical_reads ,
+                       row_count
+                FROM sys.dm_exec_sessions
+                WHERE session_id > 50
+               """, 'key_col': 'session_id'}
                }
 
     @staticmethod
