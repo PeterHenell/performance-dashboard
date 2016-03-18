@@ -25,7 +25,7 @@ class QueryRepoTestCase(unittest.TestCase):
         first = recs[0]
         self.assertTrue(first['statement_text'] is not None)
         self.assertTrue(first['execution_count'] is not None)
-        self.assertTrue(first['total_elapsed_time'] is not None)
+        self.assertTrue(first['total_elapsed_seconds'] is not None)
         self.assertTrue(first['total_rows'] is not None)
         self.assertTrue(first['total_logical_reads'] is not None)
 

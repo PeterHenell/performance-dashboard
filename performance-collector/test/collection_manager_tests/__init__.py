@@ -96,7 +96,7 @@ class CollectionManagerTestCase(unittest.TestCase):
         ])
 
         collection_manager = CollectionManager(mock_db, QueryStore.queries)
-        self.assertEqual(len(collection_manager.collectors), 3)
+        self.assertTrue(len(collection_manager.collectors) > 2)
 
 if __name__ == '__main__':
     unittest.main()

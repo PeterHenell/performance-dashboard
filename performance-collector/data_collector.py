@@ -12,12 +12,59 @@ class DataCollector:
     def from_query(db, query_name, query_text, key_column):
         return DataCollector(lambda: db.get_records(query_text), key_column, query_name)
 
+    @staticmethod
+    def get_number_or_default(s, default):
+        if not s:
+            return default
+        try:
+            f = float(s)
+            return f
+        except ValueError:
+            return default
+
+    @staticmethod
+    def is_number(s):
+        if not s:
+            return False
+        try:
+            float(s)
+            return True
+        except ValueError:
+            return False
+
     def find_row_in_cache_by_key(self, key):
         if len(self.cache) > 0:
             for row in self.cache:
                 if row[self.data_key_col] == key:
                     return row
         return None
+
+    @staticmethod
+    def calculate_delta_value(val, cached_row, key):
+        if DataCollector.is_number(val):
+            delta_value = val - cached_row[key]
+            # If the new value for some reason is less than the old value (happens after restarts)
+            if delta_value < 0:
+                delta_value = 0
+            return delta_value
+        else:
+            return None
+
+    def calculate_row_delta(self, row, cached_row):
+        row_delta = {}
+        # Calculate only delta for each value which is not the key column
+        non_key_data = {key: val for (key, val) in row.items() if key != self.data_key_col}
+        for key, val in non_key_data.items():
+            # delta is the diff between the new value and the previous value
+            delta_value = DataCollector.calculate_delta_value(val, cached_row, key)
+            # Only collect values that are meaningful
+            if delta_value > 0:
+                row_delta[key] = delta_value
+
+        # Append the key and then row_delta to the result.
+        # each call to get_delta will result in one row, but it might contain only the key
+        row_delta[self.data_key_col] = row[self.data_key_col]
+        return row_delta
 
     def get_delta(self):
         # TODO: Log logger.info(self.query_name starting collection...)
@@ -32,22 +79,7 @@ class DataCollector:
         for row in data:
             cached_row = self.find_row_in_cache_by_key(row[self.data_key_col])
             if cached_row is not None:
-                row_delta = {}
-                # Calculate only delta for each value which is not the key column
-                non_key_data = {key: val for (key, val) in row.items() if key != self.data_key_col}
-                for key, val in non_key_data.items():
-                    # delta is the diff between the new value and the previous value
-                    delta_value = val - cached_row[key]
-                    # If the new value for some reason is less than the old value (happens after restarts)
-                    if delta_value < 0:
-                        delta_value = 0
-                    # Only collect values that are meaningful
-                    if delta_value > 0:
-                        row_delta[key] = delta_value
-
-                # Append the key and then row_delta to the result.
-                # each call to get_delta will result in one row, but it might contain only the key
-                row_delta[self.data_key_col] = row[self.data_key_col]
+                row_delta = self.calculate_row_delta(row, cached_row)
                 deltas.append(row_delta)
         self.cache = data
         return deltas

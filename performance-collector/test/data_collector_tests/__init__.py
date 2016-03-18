@@ -100,7 +100,7 @@ class DataCollectorTestCase(unittest.TestCase):
 
         delta2 = collector.get_delta()
         self.assertEquals(delta2, [
-            {'Col': 1, 'total_ms': 0, 'total_bytes': 0},
+            {'Col': 1},
             {'Col': 2, 'total_ms': 236, 'total_bytes': 2456}
         ])
 
@@ -171,20 +171,20 @@ class DataCollectorTestCase(unittest.TestCase):
 
         delta2 = collector.get_delta()
         self.assertEquals(delta2, [
-            {'Col': 1, 'total_ms': 0, 'total_bytes': 0},
+            {'Col': 1},
             {'Col': 2, 'total_ms': 236, 'total_bytes': 2456}
         ])
 
         delta3 = collector.get_delta()
         self.assertEquals(delta3, [
-            {'Col': 1, 'total_ms': 0, 'total_bytes': 0},
-            {'Col': 2, 'total_ms': 0, 'total_bytes': 0}
+            {'Col': 1},
+            {'Col': 2}
         ])
 
         delta4 = collector.get_delta()
         self.assertEquals(delta4, [
-            {'Col': 1, 'total_ms': 0, 'total_bytes': 0},
-            {'Col': 2, 'total_ms': 0, 'total_bytes': 0}
+            {'Col': 1},
+            {'Col': 2}
         ])
 
     def test_data_less_than_previous_should_be_zero_in_delta(self):
@@ -248,21 +248,32 @@ class DataCollectorTestCase(unittest.TestCase):
 
         delta2 = collector.get_delta()
         self.assertEquals(delta2, [
-            {'Col': 1, 'total_ms': 0, 'total_bytes': 0},
+            {'Col': 1},
             {'Col': 2, 'total_ms': 236, 'total_bytes': 2456}
         ])
 
         delta3 = collector.get_delta()
         self.assertEquals(delta3, [
-            {'Col': 1, 'total_ms': 0, 'total_bytes': 0},
-            {'Col': 2, 'total_ms': 0, 'total_bytes': 0}
+            {'Col': 1},
+            {'Col': 2}
         ])
 
         delta4 = collector.get_delta()
         self.assertEquals(delta4, [
-            {'Col': 1, 'total_ms': 0, 'total_bytes': 0},
-            {'Col': 2, 'total_ms': 0, 'total_bytes': 0}
+            {'Col': 1},
+            {'Col': 2}
         ])
+
+    def test_should_get_number(self):
+        n = DataCollector.get_number_or_default('1,4', 0)
+        self.assertEquals(0, n)
+
+        n = DataCollector.get_number_or_default(None, 0)
+        self.assertEquals(0, n)
+
+        n = DataCollector.get_number_or_default(1.4, 0)
+        self.assertEquals(1.4, n)
+
 
 
 if __name__ == '__main__':
