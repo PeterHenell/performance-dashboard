@@ -63,7 +63,91 @@ class QueryStore:
     WHERE database_id > 4
     """,
                                             'key_col': 'file_id'
-                                            }
+                                            },
+               "partition_stats": {'sql_text': """
+                SET NOCOUNT ON;
+
+                DECLARE @partition_stats table(
+                    [partition_key]	VARCHAR(500),
+                    [db_id] INT,
+                    [partition_id] BIGINT,
+                    [object_id]	INT,
+                    [index_id]	INT,
+                    [partition_number]	INT,
+                    [in_row_data_page_count]	BIGINT,
+                    [in_row_used_page_count]	BIGINT,
+                    [in_row_reserved_page_count]	BIGINT,
+                    [lob_used_page_count]	BIGINT,
+                    [lob_reserved_page_count]	BIGINT,
+                    [row_overflow_used_page_count]	BIGINT,
+                    [row_overflow_reserved_page_count]	BIGINT,
+                    [used_page_count]	BIGINT,
+                    [reserved_page_count]	BIGINT,
+                    [row_count]	BIGINT
+                );
+
+                INSERT INTO @partition_stats
+                        ( partition_key ,
+                          [db_id],
+                          [partition_id],
+                          object_id ,
+                          index_id ,
+                          partition_number ,
+                          in_row_data_page_count ,
+                          in_row_used_page_count ,
+                          in_row_reserved_page_count ,
+                          lob_used_page_count ,
+                          lob_reserved_page_count ,
+                          row_overflow_used_page_count ,
+                          row_overflow_reserved_page_count ,
+                          used_page_count ,
+                          reserved_page_count ,
+                          row_count
+                        )
+                EXEC sp_msforeachdb '
+                    IF ''?''  NOT IN (''tempDB'',''model'',''msdb'')
+                    BEGIN
+                        SELECT
+                           CONCAT(DB_ID(''?''), ''_'', partition_id) AS partition_key ,
+                           DB_ID(''?'') as db_id,
+                           partition_id,
+                           object_id ,
+                           index_id ,
+                           partition_number ,
+                           in_row_data_page_count ,
+                           in_row_used_page_count ,
+                           in_row_reserved_page_count ,
+                           lob_used_page_count ,
+                           lob_reserved_page_count ,
+                           row_overflow_used_page_count ,
+                           row_overflow_reserved_page_count ,
+                           used_page_count ,
+                           reserved_page_count ,
+                           row_count
+                        FROM sys.dm_db_partition_stats
+                    END    ';
+                SET NOCOUNT OFF;
+
+                SELECT
+                    [partition_key],
+                    [db_id],
+                    [object_id],
+                    [index_id],
+                    [partition_number],
+                    [in_row_data_page_count],
+                    [in_row_used_page_count],
+                    [in_row_reserved_page_count],
+                    [lob_used_page_count],
+                    [lob_reserved_page_count],
+                    [row_overflow_used_page_count],
+                    [row_overflow_reserved_page_count],
+                    [used_page_count],
+                    [reserved_page_count],
+                    [row_count]
+
+                FROM @partition_stats;
+               """, 'key_col': 'partition_key'
+                                   }
                }
 
     @staticmethod
@@ -77,4 +161,3 @@ class QueryStore:
     @staticmethod
     def get_query_names(self):
         return self.queries.keys()
-
