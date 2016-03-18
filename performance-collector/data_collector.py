@@ -45,11 +45,10 @@ class DataCollector:
                     if delta_value > 0:
                         row_delta[key] = delta_value
 
-                # Only append row deltas which contain any data.
-                # If the delta_row have data, we also add the key column
-                if len(row_delta.keys()) > 0:
-                    row_delta[self.data_key_col] = row[self.data_key_col]
-                    deltas.append(row_delta)
+                # Append the key and then row_delta to the result.
+                # each call to get_delta will result in one row, but it might contain only the key
+                row_delta[self.data_key_col] = row[self.data_key_col]
+                deltas.append(row_delta)
         self.cache = data
         return deltas
 
