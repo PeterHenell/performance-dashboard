@@ -10,39 +10,36 @@ class QueryStore:
                                     },
 
                "query_stats": {'sql_text': """
-    SELECT statement_text,
-       execution_count ,
-       total_worker_time / 1000000 as total_worker_seconds,
-       min_worker_time / 1000000 as min_worker_seconds,
-       max_worker_time / 1000000 as max_worker_seconds,
-       total_physical_reads ,
-       min_physical_reads ,
-       max_physical_reads ,
-       total_logical_writes ,
-       min_logical_writes ,
-       max_logical_writes ,
-       total_logical_reads ,
-       min_logical_reads ,
-       max_logical_reads ,
-       total_clr_time ,
-       min_clr_time ,
-       max_clr_time ,
-       total_elapsed_time / 1000000 as total_elapsed_seconds,
-       min_elapsed_time / 1000000 as min_elapsed_seconds,
-       max_elapsed_time / 1000000 as max_elapsed_seconds,
-       total_rows ,
-       min_rows ,
-       max_rows
-    FROM sys.dm_exec_query_stats
-    CROSS APPLY (SELECT text,
-                     SUBSTRING(text, statement_start_offset / 2 + 1,
-                                    (CASE WHEN statement_end_offset = -1
-                                            THEN LEN(CONVERT(nvarchar(MAX),text)) * 2
-                                            ELSE statement_end_offset
-                                        END - statement_start_offset) / 2)
-              FROM sys.dm_exec_sql_text(sql_handle)
+                        SELECT
+                           raw_sql AS statement_text,
+                           SUM(execution_count) AS execution_count ,
+                           SUM(total_worker_time / 1000000) as total_worker_seconds,
+                           SUM(min_worker_time / 1000000) as min_worker_seconds,
+                           SUM(max_worker_time / 1000000) as max_worker_seconds,
+                           SUM(total_physical_reads) AS total_physical_reads ,
+                           SUM(min_physical_reads)  AS min_physical_reads,
+                           SUM(max_physical_reads) AS max_physical_reads ,
+                           SUM(total_logical_writes) AS total_logical_writes,
+                           SUM(min_logical_writes) AS min_logical_writes,
+                           SUM(max_logical_writes) AS max_logical_writes,
+                           SUM(total_logical_reads) AS total_logical_reads,
+                           SUM(min_logical_reads) AS min_logical_reads,
+                           SUM(max_logical_reads) AS max_logical_reads,
+                           SUM(total_clr_time) AS total_clr_time,
+                           SUM(min_clr_time) AS min_clr_time,
+                           SUM(max_clr_time) AS max_clr_time,
+                           SUM(total_elapsed_time / 1000000) as total_elapsed_seconds,
+                           SUM(min_elapsed_time / 1000000) as min_elapsed_seconds,
+                           SUM(max_elapsed_time / 1000000) as max_elapsed_seconds,
+                           SUM(total_rows) AS total_rows ,
+                           SUM(min_rows) AS min_rows,
+                           SUM(max_rows) AS max_rows
+                        FROM sys.dm_exec_query_stats
+                        CROSS APPLY (SELECT text, '' FROM sys.dm_exec_sql_text(sql_handle)
+                                    ) AS query(raw_sql, statement_text)
+                        GROUP BY query.raw_sql
 
-             ) AS query(raw_sql, statement_text)
+
                                          """,
                                'key_col': 'statement_text'
                                },
