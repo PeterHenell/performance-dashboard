@@ -58,7 +58,7 @@ class DataCollector:
             # delta is the diff between the new value and the previous value
             delta_value = DataCollector.calculate_delta_value(val, cached_row, key)
             # Only collect values that are meaningful
-            if delta_value > 0:
+            if delta_value is not None and delta_value > 0:
                 row_delta[key] = delta_value
 
         # Append the key and then row_delta to the result.
