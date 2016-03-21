@@ -14,7 +14,7 @@ class DatabaseAccess:
 
     @staticmethod
     def get_connection(config):
-        connection_string = 'Driver={SQL Server Native Client 11.0};Server=%s;Database=%s;Uid=%s;Pwd=%s;' \
+        connection_string = 'Driver={SQL Server Native Client 11.0};Server=%s;Database=%s;Uid=%s;Pwd=%s;APP=PerfCol' \
                            % (config['host'], config['database'], config['username'], config['password'])
 
         logger.info('Connecting to %s@%s.%s',  config['username'], config['host'], config['database'])

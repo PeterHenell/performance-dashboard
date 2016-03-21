@@ -1,15 +1,19 @@
 class QueryStore:
     queries = {"dm_os_wait_stats": {'sql_text': """
+                                -- PerfCollector
                                 SELECT wait_type ,
                                        waiting_tasks_count ,
                                        wait_time_ms ,
                                        max_wait_time_ms ,
                                        signal_wait_time_ms
-                                FROM sys.dm_os_wait_stats""",
+                                FROM sys.dm_os_wait_stats
+                                WHERE waiting_tasks_count + wait_time_ms + max_wait_time_ms + signal_wait_time_ms > 0
+                                """,
                                     'key_col': 'wait_type'
                                     },
 
                "query_stats": {'sql_text': """
+                        -- PerfCollector
                         SELECT
                            raw_sql AS statement_text,
                            SUM(execution_count) AS execution_count ,
@@ -37,6 +41,7 @@ class QueryStore:
                         FROM sys.dm_exec_query_stats
                         CROSS APPLY (SELECT text, '' FROM sys.dm_exec_sql_text(sql_handle)
                                     ) AS query(raw_sql, statement_text)
+                        where raw_sql not like '%PerfCollector%'
                         GROUP BY query.raw_sql
 
 
@@ -45,6 +50,7 @@ class QueryStore:
                                },
 
                "dm_io_virtual_file_stats": {'sql_text': """
+    -- PerfCollector
     SELECT db_name(database_id) + '(' + CAST(file_id AS VARCHAR(10)) + ')' as file_id,
            num_of_reads ,
            num_of_bytes_read ,
@@ -62,6 +68,7 @@ class QueryStore:
                                             'key_col': 'file_id'
                                             },
                "partition_stats": {'sql_text': """
+               -- PerfCollector
                 SET NOCOUNT ON;
 
                 DECLARE @partition_stats table(
@@ -104,6 +111,7 @@ class QueryStore:
                 EXEC sp_msforeachdb '
                     IF ''?''  NOT IN (''tempDB'',''model'',''msdb'')
                     BEGIN
+                        -- PerfCollector
                         SELECT
                            CONCAT(DB_ID(''?''), ''_'', partition_id) AS partition_key ,
                            DB_ID(''?'') as db_id,
@@ -146,6 +154,7 @@ class QueryStore:
                """, 'key_col': 'partition_key'
                                    },
                "active_sessions": {'sql_text': """
+               -- PerfCollector
                 SELECT session_id ,
                        cpu_time ,
                        memory_usage ,
