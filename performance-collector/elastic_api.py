@@ -47,7 +47,12 @@ class ElasticAPI:
                 "statement_text": {
                     "index": "not_analyzed",
                     "type": "string"
+                },
+                "file_id": {
+                    "index": "not_analyzed",
+                    "type": "string"
                 }
+
             }
         }
 
