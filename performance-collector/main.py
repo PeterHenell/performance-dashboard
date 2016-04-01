@@ -48,7 +48,7 @@ def main(arguments):
 
         while True:
             stat_collector.run()
-            time.sleep(15)
+            time.sleep(300)
 
 
 if __name__ == '__main__':
