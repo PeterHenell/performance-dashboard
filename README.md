@@ -7,3 +7,6 @@ Dashboard for performance statistics currently specific to collect data from fro
 
 ## TODO:
 * See https://github.com/PeterHenell/performance-dashboard/issues
+
+## Example:
+![example dashboard](https://github.com/PeterHenell/performance-dashboard/blob/master/dashboard.png)
