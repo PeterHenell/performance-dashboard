@@ -27,21 +27,37 @@ class MockDb:
 
 
 class CollectionManagerTestCase(unittest.TestCase):
+    def test_should_calculate_values(self):
+        prev, delta = DataCollector.calculate_values(15, 2)
+        self.assertEquals(2, prev)
+        self.assertEquals(13, delta)
+
+    def test_should_calculate_row_delta(self):
+        row = {'ID': 111, 'bytes': 100}
+        cached_row = {'ID': 111, 'bytes': 40}
+        data_key_col = 'ID'
+        row_delta = DataCollector.calculate_row_delta(row, cached_row, data_key_col)
+
+        self.assertEquals(row_delta, {'ID': 111, 'bytes_delta': 60, 'bytes_measured': 100, 'bytes_prev': 40})
+
     def test_from_query(self):
         mock_db = MockDb({'mocked query': [
-                             [{'mocked_key_col': 1, 'total_bytes': 23}],
-                             [{'mocked_key_col': 1, 'total_bytes': 58}]
-                          ]})
+            [{'mocked_key_col': 1, 'total_bytes': 23}],
+            [{'mocked_key_col': 1, 'total_bytes': 58}]
+        ]})
         collector = DataCollector.from_query(mock_db,
                                              'this is a query name',
                                              'mocked query',
                                              'mocked_key_col')
         self.assertEquals(collector.query_name, 'this is a query name')
         delta1 = collector.get_delta()
-        self.assertEquals(delta1, [])
+        self.assertListEqual(delta1, [{'mocked_key_col': 1, 'total_bytes_measured': 23}])
 
         delta2 = collector.get_delta()
-        self.assertListEqual(delta2, [{'mocked_key_col': 1, 'total_bytes': 35}])
+        self.assertListEqual(delta2, [{'mocked_key_col': 1,
+                                       'total_bytes_measured': 58,
+                                       'total_bytes_prev': 23,
+                                       'total_bytes_delta': 35}])
 
     def test_should_create_collectors_for_all_queries(self):
         mock_db = MockDb({
@@ -64,16 +80,24 @@ class CollectionManagerTestCase(unittest.TestCase):
                     [{'mocked_key_col': 1, 'total_bytes': 44}],
                     [{'mocked_key_col': 1, 'total_bytes': 58}],
                 ],
-                 'mocked query 2': [
-                    [{'mocked_key_col': 2, 'total_bytes': 23}],
-                    [{'mocked_key_col': 2, 'total_bytes': 58}]
-                ]})
+                    'mocked query 2': [
+                        [{'mocked_key_col': 2, 'total_bytes': 23}],
+                        [{'mocked_key_col': 2, 'total_bytes': 58}]
+                    ]})
         queries = {'query name1': {'sql_text': 'mocked query', 'key_col': 'mocked_key_col'},
                    'query_name 2': {'sql_text': 'mocked query 2', 'key_col': 'mocked_key_col'}}
         collection_manager = CollectionManager(mock_db, queries)
 
         delta = collection_manager.collect_data()
-        self.assertEquals(delta, [])
+        # self.assertListEqual(delta, [{'query_name': 'query name1',
+        #                               'delta':
+        #                                   [{'mocked_key_col': 1, 'total_bytes_measured': 44}],
+        #                               },
+        #                              {'query_name': 'query_name 2',
+        #                               'delta':
+        #                                   [{'mocked_key_col': 2, 'total_bytes_measured': 23}]
+        #                               }
+        #                              ])
 
         # [{'delta': [{'total_bytes': 0, 'mocked_key_col': 1}], 'query_name': 'query name1'},
         #  {'delta': [{'total_bytes': 0, 'mocked_key_col': 2}], 'query_name': 'query_name 2'}]
@@ -82,8 +106,14 @@ class CollectionManagerTestCase(unittest.TestCase):
         query1_delta = find(lambda d: d['query_name'] == 'query name1', big_delta)
         query2_delta = find(lambda d: d['query_name'] == 'query_name 2', big_delta)
 
-        expected1 = {'query_name': 'query name1', 'delta': [{'total_bytes': 14, 'mocked_key_col': 1}]}
-        expected2 = {'query_name': 'query_name 2', 'delta': [{'total_bytes': 35, 'mocked_key_col': 2}]}
+        expected1 = {'query_name': 'query name1', 'delta': [{'mocked_key_col': 1,
+                                                             'total_bytes_delta': 14,
+                                                             'total_bytes_measured': 58,
+                                                             'total_bytes_prev': 44}]}
+        expected2 = {'query_name': 'query_name 2', 'delta': [{'mocked_key_col': 2,
+                                                              'total_bytes_delta': 35,
+                                                              'total_bytes_measured': 58,
+                                                              'total_bytes_prev': 23}]}
         self.assertEqual(expected1, query1_delta)
         self.assertEqual(expected2, query2_delta)
 
@@ -97,6 +127,7 @@ class CollectionManagerTestCase(unittest.TestCase):
 
         collection_manager = CollectionManager(mock_db, QueryStore.queries)
         self.assertTrue(len(collection_manager.collectors) > 2)
+
 
 if __name__ == '__main__':
     unittest.main()

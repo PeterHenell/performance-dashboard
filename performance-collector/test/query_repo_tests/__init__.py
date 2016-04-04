@@ -18,7 +18,7 @@ class QueryRepoTestCase(unittest.TestCase):
         self.assertTrue(first['wait_time_ms'] is not None)
         self.assertTrue(first['max_wait_time_ms'] is not None)
         self.assertTrue(first['signal_wait_time_ms'] is not None)
-        self.assertTrue(len(waits) > 100)
+        self.assertTrue(len(waits) > 10)
 
     def test_query_stats_available(self):
         recs = db.get_records(QueryStore.get_query_text('query_stats'))

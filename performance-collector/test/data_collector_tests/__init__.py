@@ -45,29 +45,6 @@ def pop_mock_collect():
 
 
 class DataCollectorTestCase(unittest.TestCase):
-    def test_delta_calculation(self):
-        collector = DataCollector(mock_collect, 'Col', 'Query name here')
-
-        delta1 = collector.get_delta()
-        self.assertEquals(delta1, [])
-
-        delta2 = collector.get_delta()
-        self.assertEquals(delta2, [{'Col': 1, 'total_ms': 2, 'total_bytes': 200}])
-
-    def test_delta_calculation_on_multiple_rows(self):
-        collector = DataCollector(multirow_mock_collect, 'Col', 'Name of the query')
-        self.assertEquals(collector.query_name, 'Name of the query')
-
-        delta1 = collector.get_delta()
-        self.assertEquals(delta1, [])
-
-        delta2 = collector.get_delta()
-        self.assertEquals(delta2, [
-            {'Col': 1, 'total_ms': 4, 'total_bytes': 400},
-            {'Col': 2, 'total_ms': 8, 'total_bytes': 800},
-            {'Col': 3, 'total_ms': 12, 'total_bytes': 1200}
-        ])
-
     def test_zero_diff_should_give_no_result(self):
         pop_mock_collect.items = [[
             {
@@ -96,12 +73,19 @@ class DataCollectorTestCase(unittest.TestCase):
         collector = DataCollector(pop_mock_collect, 'Col', 'Name of the query')
 
         delta1 = collector.get_delta()
-        self.assertEquals(delta1, [])
+        self.assertListEqual(delta1, [{'total_ms_measured': 100, 'Col': 1, 'total_bytes_measured': 333},
+                                      {'Col': 2, 'total_ms_measured': 220, 'total_bytes_measured': 1000}])
 
         delta2 = collector.get_delta()
-        self.assertEquals(delta2, [
-            {'Col': 1},
-            {'Col': 2, 'total_ms': 236, 'total_bytes': 2456}
+        self.assertListEqual(delta2, [
+            {'total_ms_measured': 100, 'total_bytes_measured': 333, 'Col': 1},
+            {'Col': 2,
+             'total_bytes_measured': 3456,
+             'total_ms_delta': 236,
+             'total_ms_prev': 220,
+             'total_ms_measured': 456,
+             'total_bytes_delta': 2456,
+             'total_bytes_prev': 1000}
         ])
 
         delta3 = collector.get_delta()
@@ -167,24 +151,31 @@ class DataCollectorTestCase(unittest.TestCase):
         collector = DataCollector(pop_mock_collect, 'Col', 'Name of the query')
 
         delta1 = collector.get_delta()
-        self.assertEquals(delta1, [])
+        self.assertEquals(delta1, [{'Col': 1, 'total_bytes_measured': 333, 'total_ms_measured': 100},
+                                   {'Col': 2, 'total_bytes_measured': 1000, 'total_ms_measured': 220}])
 
         delta2 = collector.get_delta()
         self.assertEquals(delta2, [
-            {'Col': 1},
-            {'Col': 2, 'total_ms': 236, 'total_bytes': 2456}
+            {'Col': 1, 'total_ms_measured': 100, 'total_bytes_measured': 333},
+            {'Col': 2,
+             'total_ms_delta': 236,
+             'total_bytes_delta': 2456,
+             'total_ms_prev': 220,
+             'total_ms_measured': 456,
+             'total_bytes_measured': 3456,
+             'total_bytes_prev': 1000}
         ])
 
         delta3 = collector.get_delta()
         self.assertEquals(delta3, [
-            {'Col': 1},
-            {'Col': 2}
+            {'Col': 1, 'total_ms_measured': 100, 'total_bytes_measured': 333},
+            {'total_ms_measured': 456, 'total_bytes_measured': 3456, 'Col': 2}
         ])
 
         delta4 = collector.get_delta()
         self.assertEquals(delta4, [
-            {'Col': 1},
-            {'Col': 2}
+            {'total_bytes_measured': 333, 'Col': 1, 'total_ms_measured': 100},
+            {'total_bytes_measured': 3456, 'total_ms_measured': 456, 'Col': 2}
         ])
 
     def test_data_less_than_previous_should_be_zero_in_delta(self):
@@ -244,24 +235,34 @@ class DataCollectorTestCase(unittest.TestCase):
         collector = DataCollector(pop_mock_collect, 'Col', 'Name of the query')
 
         delta1 = collector.get_delta()
-        self.assertEquals(delta1, [])
+        self.assertListEqual(delta1, [{'Col': 1, 'total_ms_measured': 100, 'total_bytes_measured': 333},
+                                      {'Col': 2, 'total_ms_measured': 220, 'total_bytes_measured': 1000}])
 
         delta2 = collector.get_delta()
+        # Col 1 have no changes, it is still the same
+        # Col 2 have changed
         self.assertEquals(delta2, [
-            {'Col': 1},
-            {'Col': 2, 'total_ms': 236, 'total_bytes': 2456}
+            {'Col': 1, 'total_ms_measured': 100, 'total_bytes_measured': 333},
+            {'Col': 2,
+             'total_bytes_measured': 3456,
+             'total_ms_prev': 220,
+             'total_bytes_prev': 1000,
+             'total_ms_delta': 236,
+
+             'total_ms_measured': 456,
+             'total_bytes_delta': 2456}
         ])
 
         delta3 = collector.get_delta()
         self.assertEquals(delta3, [
-            {'Col': 1},
-            {'Col': 2}
+            {'total_ms_measured': 25, 'Col': 1, 'total_bytes_measured': 6},
+            {'total_ms_measured': 30, 'Col': 2, 'total_bytes_measured': 11}
         ])
 
         delta4 = collector.get_delta()
         self.assertEquals(delta4, [
-            {'Col': 1},
-            {'Col': 2}
+            {'total_ms_measured': 25, 'Col': 1, 'total_bytes_measured': 6},
+            {'total_ms_measured': 30, 'Col': 2, 'total_bytes_measured': 11}
         ])
 
     def test_should_get_number(self):
@@ -273,7 +274,6 @@ class DataCollectorTestCase(unittest.TestCase):
 
         n = DataCollector.get_number_or_default(1.4, 0)
         self.assertEquals(1.4, n)
-
 
 
 if __name__ == '__main__':

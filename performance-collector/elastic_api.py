@@ -52,7 +52,6 @@ class ElasticAPI:
                     "index": "not_analyzed",
                     "type": "string"
                 }
-
             }
         }
 
