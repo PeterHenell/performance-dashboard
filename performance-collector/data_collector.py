@@ -40,30 +40,37 @@ class DataCollector:
         return None
 
     @staticmethod
-    def calculate_delta_value(val, cached_row, key):
-        if DataCollector.is_number(val):
-            delta_value = val - cached_row[key]
+    def calculate_values(val, prev_value):
+        if DataCollector.is_number(val) and DataCollector.is_number(prev_value):
+            delta_value = val - prev_value
             # If the new value for some reason is less than the old value (happens after restarts)
             if delta_value < 0:
                 delta_value = 0
-            return delta_value
+            return prev_value, delta_value
         else:
-            return None
+            return None, None
 
-    def calculate_row_delta(self, row, cached_row):
+    @staticmethod
+    def calculate_row_delta(row, cached_row, data_key_col):
         row_delta = {}
         # Calculate only delta for each value which is not the key column
-        non_key_data = {key: val for (key, val) in row.items() if key != self.data_key_col}
-        for key, val in non_key_data.items():
+        non_key_data = {key: val for (key, val) in row.items() if key != data_key_col}
+        for key, measured_value in non_key_data.items():
+            if cached_row is not None:
+                prev_value = cached_row[key]
+            else:
+                prev_value = None
             # delta is the diff between the new value and the previous value
-            delta_value = DataCollector.calculate_delta_value(val, cached_row, key)
-            # Only collect values that are meaningful
+            (prev_value, delta_value) = DataCollector.calculate_values(measured_value, prev_value)
+            # Only collect measured values that are meaningful
             if delta_value is not None and delta_value > 0:
-                row_delta[key] = delta_value
+                row_delta[key + '_delta'] = delta_value
+                row_delta[key + '_prev'] = prev_value
+            row_delta[key + '_measured'] = measured_value
 
-        # Append the key and then row_delta to the result.
+        # Append the key
         # each call to get_delta will result in one row, but it might contain only the key
-        row_delta[self.data_key_col] = row[self.data_key_col]
+        row_delta[data_key_col] = row[data_key_col]
         return row_delta
 
     def get_delta(self):
@@ -78,9 +85,9 @@ class DataCollector:
         deltas = []
         for row in data:
             cached_row = self.find_row_in_cache_by_key(row[self.data_key_col])
-            if cached_row is not None:
-                row_delta = self.calculate_row_delta(row, cached_row)
-                deltas.append(row_delta)
+            # if cached_row is not None:
+            row_delta = DataCollector.calculate_row_delta(row, cached_row, self.data_key_col)
+            deltas.append(row_delta)
         self.cache = data
         return deltas
 

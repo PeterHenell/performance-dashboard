@@ -41,19 +41,18 @@ class MockElasticSearchAPI:
 
 class StatsCollectorTests(unittest.TestCase):
 
-    def test_should_enhance_collected_data_with_timestamp(self):
+    def test_should_use_mock_api(self):
         queries = {'query name1': {'sql_text': 'mocked query', 'key_col': 'mocked_key_col'},
                    'query_name 2': {'sql_text': 'mocked query 2', 'key_col': 'mocked_key_col'}}
         db = MockDb()
         es = MockElasticSearchAPI()
-        # config_manager = ConfigManager.from_file('test.ini')
         sc = StatCollector(es, db, queries)
 
         sc.run()
-        self.assertEqual(0, len(sc.api.records), 'First run should be empty, no delta')
+        self.assertEquals(2, len(sc.api.records), 'All runs return measured values')
 
         sc.run()
-        self.assertEqual(2, len(sc.api.records), 'Second run should have the delta of the two queries')
+        self.assertEquals(2, len(sc.api.records), 'Second run should have the delta of the two queries')
 
     def test_should_create_statCollectors_from_config(self):
         config_manager = ConfigManager.from_file('test.ini')
