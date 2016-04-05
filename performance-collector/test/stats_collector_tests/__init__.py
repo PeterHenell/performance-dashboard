@@ -62,6 +62,8 @@ class StatsCollectorTests(unittest.TestCase):
         stat_collectors = StatCollector.from_config_manager(config_manager, queries, MockElasticSearchAPI, MockDb)
         self.assertEquals(len(stat_collectors), 2)
 
+    def test_should_crate_statsCollector_from_config_with_different_collectorClasses(self):
+        self.fail('Not implemented, issue 1')
 
 if __name__ == '__main__':
     unittest.main()
