@@ -4,6 +4,8 @@ from database_access import DatabaseAccess
 from collection_manager import CollectionManager
 import logging
 
+from sqlserver_collector import SQLServerCollector
+
 logger = logging.getLogger('perf-collector')
 
 
@@ -17,9 +19,9 @@ class StatCollector:
         self.api = es_api
         self.db = db_api
 
-        self.collection_manager = CollectionManager(self.db, queries)
-        # for query_name, query_text in queries.items():
-        #         self.initialize_elasticsearch(db_name, query_name)
+        self.collection_manager = CollectionManager()
+        # TODO: Pull out usage of SQLServerCollector, statCollector should be collector independant
+        SQLServerCollector.append_collectors_from_queries(self.collection_manager, self.db, queries)
 
     @staticmethod
     def from_config_manager(config_manager, queries, es_class=ElasticAPI, db_class=DatabaseAccess):
@@ -43,7 +45,6 @@ class StatCollector:
             # recorded data is list of lists{of documents}
             for records in recorded_data:
                 self.api.consume_to_index(records, self.db.db_name, records['query_name'], timestamp)
-
 
     def initialize_elasticsearch(self, index_name, query_name):
         self.api.create_index(index_name)

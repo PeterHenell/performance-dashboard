@@ -5,6 +5,8 @@ from data_collector import DataCollector
 from query_store import QueryStore
 import unittest
 
+from sqlserver_collector import SQLServerCollector
+
 manager = ConfigManager.from_file('test.ini')
 config = manager.get_config('localhost.master')
 db = DatabaseAccess(config)
@@ -45,7 +47,7 @@ class CollectionManagerTestCase(unittest.TestCase):
             [{'mocked_key_col': 1, 'total_bytes': 23}],
             [{'mocked_key_col': 1, 'total_bytes': 58}]
         ]})
-        collector = DataCollector.from_query(mock_db,
+        collector = SQLServerCollector.from_query(mock_db,
                                              'this is a query name',
                                              'mocked query',
                                              'mocked_key_col')
@@ -66,7 +68,8 @@ class CollectionManagerTestCase(unittest.TestCase):
         })
         queries = {'query name1': {'sql_text': 'sql 1', 'key_col': 'cola'},
                    'query_name 2': {'sql_text': 'sql 2', 'key_col': 'col k'}}
-        collection_manager = CollectionManager(mock_db, queries)
+        collection_manager = CollectionManager()
+        SQLServerCollector.append_collectors_from_queries(collection_manager, mock_db, queries)
 
         q1 = find(lambda collector: collector.query_name == 'query name1', collection_manager.collectors)
         q2 = find(lambda collector: collector.query_name == 'query_name 2', collection_manager.collectors)
@@ -86,18 +89,10 @@ class CollectionManagerTestCase(unittest.TestCase):
                     ]})
         queries = {'query name1': {'sql_text': 'mocked query', 'key_col': 'mocked_key_col'},
                    'query_name 2': {'sql_text': 'mocked query 2', 'key_col': 'mocked_key_col'}}
-        collection_manager = CollectionManager(mock_db, queries)
+        collection_manager = CollectionManager()
+        SQLServerCollector.append_collectors_from_queries(collection_manager, mock_db, queries)
 
         delta = collection_manager.collect_data()
-        # self.assertListEqual(delta, [{'query_name': 'query name1',
-        #                               'delta':
-        #                                   [{'mocked_key_col': 1, 'total_bytes_measured': 44}],
-        #                               },
-        #                              {'query_name': 'query_name 2',
-        #                               'delta':
-        #                                   [{'mocked_key_col': 2, 'total_bytes_measured': 23}]
-        #                               }
-        #                              ])
 
         # [{'delta': [{'total_bytes': 0, 'mocked_key_col': 1}], 'query_name': 'query name1'},
         #  {'delta': [{'total_bytes': 0, 'mocked_key_col': 2}], 'query_name': 'query_name 2'}]
@@ -125,7 +120,8 @@ class CollectionManagerTestCase(unittest.TestCase):
             [{'mocked_key_col': 2, 'total_bytes': 58}]
         ])
 
-        collection_manager = CollectionManager(mock_db, QueryStore.queries)
+        collection_manager = CollectionManager()
+        SQLServerCollector.append_collectors_from_queries(collection_manager, mock_db, QueryStore.queries)
         self.assertTrue(len(collection_manager.collectors) > 2)
 
 

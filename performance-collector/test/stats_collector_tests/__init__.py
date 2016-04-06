@@ -2,6 +2,7 @@ import unittest
 
 from config_manager import ConfigManager
 from query_store import QueryStore
+from sqlserver_collector import SQLServerCollector
 from stats_collector import StatCollector
 
 

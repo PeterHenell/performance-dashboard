@@ -9,10 +9,6 @@ class DataCollector:
         self.query_name = query_name
 
     @staticmethod
-    def from_query(db, query_name, query_text, key_column):
-        return DataCollector(lambda: db.get_records(query_text), key_column, query_name)
-
-    @staticmethod
     def get_number_or_default(s, default):
         if not s:
             return default
