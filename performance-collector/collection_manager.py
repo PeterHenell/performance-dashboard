@@ -6,9 +6,6 @@ from timeit import default_timer as timer
 from data_collector import DataCollector
 
 
-
-
-
 class CollectionManager:
 
     def __init__(self):

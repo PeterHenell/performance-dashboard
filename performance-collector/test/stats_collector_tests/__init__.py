@@ -64,6 +64,8 @@ class StatsCollectorTests(unittest.TestCase):
         self.assertEquals(len(stat_collectors), 2)
 
     def test_should_crate_statsCollector_from_config_with_different_collectorClasses(self):
+        config_manager = ConfigManager.from_file('test.ini')
+        StatCollector.from_config_manager(config_manager)
         self.fail('Not implemented, issue 1')
 
 if __name__ == '__main__':
