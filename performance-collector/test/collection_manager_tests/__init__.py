@@ -19,13 +19,18 @@ def find(f, seq):
 
 
 class MockDb:
-    def __init__(self, records):
-        self.records = records
+
+    def __init__(self, db_config):
+        self.config = db_config
 
     def get_records(self, query):
         # print(self.records)
         # print(self.records[query])
-        return self.records[query].pop(0)
+        return MockDb.records[query].pop(0)
+
+    @staticmethod
+    def set_records(records):
+        MockDb.records = records
 
 
 class CollectionManagerTestCase(unittest.TestCase):
@@ -43,15 +48,16 @@ class CollectionManagerTestCase(unittest.TestCase):
         self.assertEquals(row_delta, {'ID': 111, 'bytes_delta': 60, 'bytes_measured': 100, 'bytes_prev': 40})
 
     def test_from_query(self):
-        mock_db = MockDb({'mocked query': [
+        mock_db = MockDb(None)
+        MockDb.records = {'mocked query': [
             [{'mocked_key_col': 1, 'total_bytes': 23}],
             [{'mocked_key_col': 1, 'total_bytes': 58}]
-        ]})
+        ]}
         collector = SQLServerCollector.from_query(mock_db,
-                                             'this is a query name',
-                                             'mocked query',
-                                             'mocked_key_col',
-                                             'collector_name')
+                                                  'this is a query name',
+                                                  'mocked query',
+                                                  'mocked_key_col',
+                                                  'collector_name')
         self.assertEquals(collector.query_name, 'this is a query name')
         delta1 = collector.get_delta()
         self.assertListEqual(delta1, [{'mocked_key_col': 1, 'total_bytes_measured': 23}])
@@ -63,14 +69,15 @@ class CollectionManagerTestCase(unittest.TestCase):
                                        'total_bytes_delta': 35}])
 
     def test_should_create_collectors_for_all_queries(self):
-        mock_db = MockDb({
+        MockDb.records = {
             'sql 1': [[{'mocked_key_col': 1, 'total_bytes': 23}]],
             'sql 2': [[{'mocked_key_col': 1, 'total_bytes': 58}]]
-        })
+        }
         queries = {'query name1': {'sql_text': 'sql 1', 'key_col': 'cola'},
                    'query_name 2': {'sql_text': 'sql 2', 'key_col': 'col k'}}
         collection_manager = CollectionManager()
-        SQLServerCollector.get_collectors_from_queries(collection_manager, mock_db, queries)
+        sql_coll = SQLServerCollector(MockDb, queries)
+        collection_manager.collectors.extend(sql_coll.get_collectors('', config))
 
         q1 = find(lambda collector: collector.query_name == 'query name1', collection_manager.collectors)
         q2 = find(lambda collector: collector.query_name == 'query_name 2', collection_manager.collectors)
@@ -79,20 +86,19 @@ class CollectionManagerTestCase(unittest.TestCase):
         self.assertEquals(q2.data_key_col, 'col k')
 
     def test_should_collect_data_from_all_queries(self):
-        mock_db = MockDb(
-                {'mocked query': [
-                    [{'mocked_key_col': 1, 'total_bytes': 44}],
-                    [{'mocked_key_col': 1, 'total_bytes': 58}],
-                ],
-                    'mocked query 2': [
-                        [{'mocked_key_col': 2, 'total_bytes': 23}],
-                        [{'mocked_key_col': 2, 'total_bytes': 58}]
-                    ]})
+        MockDb.records = {'mocked query': [
+            [{'mocked_key_col': 1, 'total_bytes': 44}],
+            [{'mocked_key_col': 1, 'total_bytes': 58}],
+        ],
+            'mocked query 2': [
+                [{'mocked_key_col': 2, 'total_bytes': 23}],
+                [{'mocked_key_col': 2, 'total_bytes': 58}]
+            ]}
         queries = {'query name1': {'sql_text': 'mocked query', 'key_col': 'mocked_key_col'},
                    'query_name 2': {'sql_text': 'mocked query 2', 'key_col': 'mocked_key_col'}}
         collection_manager = CollectionManager()
         sqlcol = SQLServerCollector(MockDb, queries)
-        collection_manager.collectors.append(sqlcol.get_collectors('mockollector', config))
+        collection_manager.collectors.extend(sqlcol.get_collectors('mockollector', config))
 
         delta = collection_manager.collect_data()
 
@@ -113,15 +119,16 @@ class CollectionManagerTestCase(unittest.TestCase):
         self.assertEqual(expected2, query2_delta)
 
     def test_should_initialize_from_QueryStore(self):
-        mock_db = MockDb([
+        MockDb.records = [
             [{'mocked_key_col': 1, 'total_bytes': 23}],
             [{'mocked_key_col': 2, 'total_bytes': 58}],
             [{'mocked_key_col': 1, 'total_bytes': 23}],
             [{'mocked_key_col': 2, 'total_bytes': 58}]
-        ])
+        ]
 
         collection_manager = CollectionManager()
-        SQLServerCollector.get_collectors_from_queries(collection_manager, mock_db, QueryStore.queries)
+        sqlcol = SQLServerCollector(MockDb)
+        collection_manager.collectors = sqlcol.get_collectors('mockollector', config)
         self.assertTrue(len(collection_manager.collectors) > 2)
 
 

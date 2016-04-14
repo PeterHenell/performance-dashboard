@@ -57,10 +57,10 @@ class StatsCollectorTests(unittest.TestCase):
 
     def test_should_create_statCollectors_from_config(self):
         config_manager = ConfigManager.from_file('test.ini')
-        queries = {'query name1': {'sql_text': 'mocked query', 'key_col': 'mocked_key_col'},
-                   'query_name 2': {'sql_text': 'mocked query 2', 'key_col': 'mocked_key_col'}}
+        # queries = {'query name1': {'sql_text': 'mocked query', 'key_col': 'mocked_key_col'},
+        #            'query_name 2': {'sql_text': 'mocked query 2', 'key_col': 'mocked_key_col'}}
 
-        stat_collectors = StatCollector.from_config_manager(config_manager, queries, MockElasticSearchAPI, MockDb)
+        stat_collectors = StatCollector.from_config_manager(config_manager, MockElasticSearchAPI, MockDb)
         self.assertEquals(len(stat_collectors), 2)
 
     def test_should_crate_statsCollector_from_config_with_different_collectorClasses(self):

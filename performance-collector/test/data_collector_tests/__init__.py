@@ -70,7 +70,7 @@ class DataCollectorTestCase(unittest.TestCase):
                     'total_bytes': 3456
                 },
             ]]
-        collector = DataCollector(pop_mock_collect, 'Col', 'Name of the query')
+        collector = DataCollector(pop_mock_collect, 'Col', 'Name of the query', 'fake collector')
 
         delta1 = collector.get_delta()
         self.assertListEqual(delta1, [{'total_ms_measured': 100, 'Col': 1, 'total_bytes_measured': 333},
@@ -148,7 +148,7 @@ class DataCollectorTestCase(unittest.TestCase):
                 },
             ]
         ]
-        collector = DataCollector(pop_mock_collect, 'Col', 'Name of the query')
+        collector = DataCollector(pop_mock_collect, 'Col', 'Name of the query', 'fake collector')
 
         delta1 = collector.get_delta()
         self.assertEquals(delta1, [{'Col': 1, 'total_bytes_measured': 333, 'total_ms_measured': 100},
@@ -232,7 +232,7 @@ class DataCollectorTestCase(unittest.TestCase):
                 },
             ]
         ]
-        collector = DataCollector(pop_mock_collect, 'Col', 'Name of the query')
+        collector = DataCollector(pop_mock_collect, 'Col', 'Name of the query', 'fake collector')
 
         delta1 = collector.get_delta()
         self.assertListEqual(delta1, [{'Col': 1, 'total_ms_measured': 100, 'total_bytes_measured': 333},
