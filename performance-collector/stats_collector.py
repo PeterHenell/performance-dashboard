@@ -14,28 +14,22 @@ class StatCollector:
     # should collect data from all the collectors on run()
     # should enhance the data from the collectors to include a timestamp (same for all records)
     # should thread calls
-    def __init__(self, es_api, db_api, queries):
-
+    def __init__(self, es_api):
         self.api = es_api
-        self.db = db_api
 
-        self.collection_manager = CollectionManager()
-        # TODO: Pull out usage of SQLServerCollector, statCollector should be collector independant
-        SQLServerCollector.get_collectors_from_queries(self.collection_manager, self.db, queries)
-
-    @staticmethod
-    def from_config_manager(config_manager, queries, es_class=ElasticAPI, db_class=DatabaseAccess):
-        # Deprecated
-        stat_collectors = []
-        targets = config_manager.get_target_databases()
-        es_api = es_class(config_manager)
-        for db_name, db_config_key in targets:
-            #     TODO: Handle case when config key is not in config file
-            db_config = config_manager.get_config(db_config_key)
-            db = db_class(db_config)
-            sc = StatCollector(es_api, db, queries)
-            stat_collectors.append(sc)
-        return stat_collectors
+    # @staticmethod
+    # def from_config_manager(config_manager, queries, es_class=ElasticAPI, db_class=DatabaseAccess):
+    #     # Deprecated
+    #     stat_collectors = []
+    #     targets = config_manager.get_target_databases()
+    #     es_api = es_class(config_manager)
+    #     for db_name, db_config_key in targets:
+    #         #     TODO: Handle case when config key is not in config file
+    #         db_config = config_manager.get_config(db_config_key)
+    #         db = db_class(db_config)
+    #         sc = StatCollector(es_api, db, queries)
+    #         stat_collectors.append(sc)
+    #     return stat_collectors
 
     @staticmethod
     def from_config_manager(config_manager, es_class=ElasticAPI, db_class=DatabaseAccess):
@@ -47,7 +41,7 @@ class StatCollector:
             #     TODO: Handle case when config key is not in config file
             db_config = config_manager.get_config(db_config_key)
             db = db_class(db_config)
-            sc = StatCollector(es_api, db, queries)
+            sc = StatCollector(es_api, db)
             stat_collectors.append(sc)
         return stat_collectors
 
