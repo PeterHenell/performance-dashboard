@@ -1,6 +1,7 @@
 import unittest
+
 from config_manager import ConfigManager
-from database_access import DatabaseAccess
+from sqlserver_source import DatabaseAccess
 
 __author__ = 'peter.henell'
 

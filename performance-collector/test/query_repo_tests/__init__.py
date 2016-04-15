@@ -1,8 +1,8 @@
 import unittest
 
-from config_manager import ConfigManager, Configuration
-from database_access import DatabaseAccess
+from config_manager import ConfigManager
 from query_store import QueryStore
+from sqlserver_source import DatabaseAccess
 
 manager = ConfigManager.from_file('test.ini')
 config = manager.get_config('localhost.master')

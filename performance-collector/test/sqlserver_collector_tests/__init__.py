@@ -1,6 +1,6 @@
 import unittest
 
-from sqlserver_collector import InvalidSQLCollectorException, SQLServerCollector
+from sqlserver_source import SQLServerDataSource
 
 
 class FailDBMock:
@@ -16,7 +16,7 @@ class GoodDBMock:
 class SQLCollectionManagerTestCase(unittest.TestCase):
     def test_should_raise_error_if_collector_is_bad(self):
         mockDb = GoodDBMock()
-        col = SQLServerCollector.from_query(mockDb, '', '', '', '')
+        col = SQLServerDataSource.from_query(mockDb, '', '', '', '')
 
         self.assertTrue(col)
 

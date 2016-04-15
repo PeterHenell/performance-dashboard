@@ -1,15 +1,12 @@
-from collection_manager import CollectionManager
-from config_manager import ConfigManager
-from database_access import DatabaseAccess
-from data_collector import DataCollector
-from query_store import QueryStore
 import unittest
 
-from sqlserver_collector import SQLServerCollector
+from collection_manager import CollectionManager
+from config_manager import ConfigManager
+from data_collector import DataCollector
+from sqlserver_source import SQLServerDataSource
 
 manager = ConfigManager.from_file('test.ini')
 config = manager.get_config('localhost.master')
-db = DatabaseAccess(config)
 
 
 def find(f, seq):
@@ -53,7 +50,7 @@ class CollectionManagerTestCase(unittest.TestCase):
             [{'mocked_key_col': 1, 'total_bytes': 23}],
             [{'mocked_key_col': 1, 'total_bytes': 58}]
         ]}
-        collector = SQLServerCollector.from_query(mock_db,
+        collector = SQLServerDataSource.from_query(mock_db,
                                                   'this is a query name',
                                                   'mocked query',
                                                   'mocked_key_col',
@@ -76,7 +73,7 @@ class CollectionManagerTestCase(unittest.TestCase):
         queries = {'query name1': {'sql_text': 'sql 1', 'key_col': 'cola'},
                    'query_name 2': {'sql_text': 'sql 2', 'key_col': 'col k'}}
         collection_manager = CollectionManager()
-        sql_coll = SQLServerCollector(MockDb, queries)
+        sql_coll = SQLServerDataSource(MockDb, queries)
         collection_manager.collectors.extend(sql_coll.get_collectors('', config))
 
         q1 = find(lambda collector: collector.query_name == 'query name1', collection_manager.collectors)
@@ -97,7 +94,7 @@ class CollectionManagerTestCase(unittest.TestCase):
         queries = {'query name1': {'sql_text': 'mocked query', 'key_col': 'mocked_key_col'},
                    'query_name 2': {'sql_text': 'mocked query 2', 'key_col': 'mocked_key_col'}}
         collection_manager = CollectionManager()
-        sqlcol = SQLServerCollector(MockDb, queries)
+        sqlcol = SQLServerDataSource(MockDb, queries)
         collection_manager.collectors.extend(sqlcol.get_collectors('mockollector', config))
 
         delta = collection_manager.collect_data()
@@ -127,7 +124,7 @@ class CollectionManagerTestCase(unittest.TestCase):
         ]
 
         collection_manager = CollectionManager()
-        sqlcol = SQLServerCollector(MockDb)
+        sqlcol = SQLServerDataSource(MockDb)
         collection_manager.collectors = sqlcol.get_collectors('mockollector', config)
         self.assertTrue(len(collection_manager.collectors) > 2)
 

@@ -1,10 +1,9 @@
-from query_store import QueryStore
-from elastic_api import ElasticAPI
-from database_access import DatabaseAccess
-from collection_manager import CollectionManager
 import logging
 
-from sqlserver_collector import SQLServerCollector
+from collection_manager import CollectionManager
+from config_manager import ClassLoader
+from elastic_api import ElasticAPI
+from query_store import QueryStore
 
 logger = logging.getLogger('perf-collector')
 
@@ -14,36 +13,35 @@ class StatCollector:
     # should collect data from all the collectors on run()
     # should enhance the data from the collectors to include a timestamp (same for all records)
     # should thread calls
-    def __init__(self, es_api):
-        self.api = es_api
 
-    # @staticmethod
-    # def from_config_manager(config_manager, queries, es_class=ElasticAPI, db_class=DatabaseAccess):
-    #     # Deprecated
-    #     stat_collectors = []
-    #     targets = config_manager.get_target_databases()
-    #     es_api = es_class(config_manager)
-    #     for db_name, db_config_key in targets:
-    #         #     TODO: Handle case when config key is not in config file
-    #         db_config = config_manager.get_config(db_config_key)
-    #         db = db_class(db_config)
-    #         sc = StatCollector(es_api, db, queries)
-    #         stat_collectors.append(sc)
-    #     return stat_collectors
+    def __init__(self, es_api, collectors):
+        self.api = es_api
+        self.collection_manager = CollectionManager()
+        self.collection_manager.extend_collectors(collectors)
 
     @staticmethod
-    def from_config_manager(config_manager, es_class=ElasticAPI, db_class=DatabaseAccess):
-        # This method is to replace from_config_manager(config_manager, queries, es_class=ElasticAPI, db_class=DatabaseAccess)
-        stat_collectors = []
-        targets = config_manager.get_target_databases()
-        es_api = es_class(config_manager)
-        for db_name, db_config_key in targets:
-            #     TODO: Handle case when config key is not in config file
-            db_config = config_manager.get_config(db_config_key)
-            db = db_class(db_config)
-            sc = StatCollector(es_api, db)
-            stat_collectors.append(sc)
-        return stat_collectors
+    def from_config_manager(config_manager, es_class=ElasticAPI):
+        """
+        :param config_manager: where to read all the sources from.
+        :param es_class: the type to use for Elasticsearch interactions
+        :return: an initialized StatCollector with all the collectors configured in the config_manager
+        """
+        collector_types = config_manager.get_available_source_types()
+        collectors = []
+        # For each source type get the configured sources
+        for source_type_name, source_type in collector_types:
+            sources = config_manager.get_sources_for_source_type(source_type_name)
+            for source_config in sources:
+                cls = ClassLoader.get_class_from_text(source_type_name, source_type)
+                instance = cls()
+                collectors.extend(
+                        instance.get_collectors(
+                                source_type_name, source_config))
+
+        es_api = es_class()
+        stat_collector = StatCollector(es_api, collectors)
+
+        return stat_collector
 
     def run(self):
         # TODO: Logging instead of print

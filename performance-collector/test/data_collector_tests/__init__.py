@@ -1,16 +1,9 @@
 from config_manager import ConfigManager
-from database_access import DatabaseAccess
 from data_collector import DataCollector
-from query_store import QueryStore
 import unittest
 
 manager = ConfigManager.from_file('test.ini')
 config = manager.get_config('localhost.master')
-db = DatabaseAccess(config)
-
-
-# def db_collector():
-#     return db.get_records(QueryStore.get_query_text('dm_io_virtual_file_stats'))
 
 
 def mock_collect():

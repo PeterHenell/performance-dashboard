@@ -2,12 +2,12 @@ import time
 
 
 class DataCollector:
-    def __init__(self, collect_fun, data_key_col, query_name, collector_name):
+    def __init__(self, collect_fun, data_key_col, query_name, source_type):
         self.collect = collect_fun
         self.cache = []
         self.data_key_col = data_key_col
         self.query_name = query_name
-        self.collector_name = collector_name
+        self.source_type = source_type
 
     @staticmethod
     def get_number_or_default(s, default):

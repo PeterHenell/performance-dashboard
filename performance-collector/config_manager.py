@@ -70,15 +70,15 @@ class ConfigManager:
         res = [(key, path) for (key, path) in targets]
         return res
 
-    def get_available_collectors(self):
+    def get_available_source_types(self):
         """
             Get list of (collector_name, collector_class) tuples from AvailableCollectors in the config
         """
-        collector_types = self.config.items('AvailableCollectors')
+        collector_types = self.config.items('SourceTypes')
         types = [(key, ClassLoader.get_class_from_text(key, path)) for (key, path) in collector_types]
         return types
 
-    def get_sources_for_collector(self, collector_type_name):
+    def get_sources_for_source_type(self, collector_type_name):
         sources = self.config.items(collector_type_name + '.Sources')
         res = [(key, path) for (key, path) in sources]
         return res

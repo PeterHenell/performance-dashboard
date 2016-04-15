@@ -1,8 +1,7 @@
 import unittest
 
 from config_manager import ConfigManager
-from query_store import QueryStore
-from sqlserver_collector import SQLServerCollector
+from data_collector import DataCollector
 from stats_collector import StatCollector
 
 
@@ -17,6 +16,17 @@ class MockDb:
                 [{'mocked_key_col': 2, 'total_bytes': 58}]
             ]}
         self.db_name = 'mock database name'
+
+    @staticmethod
+    def collector_from_query(db, query_name, query_text, key_column, source_type):
+        return DataCollector(lambda: db.get_records(query_text), key_column, query_name, source_type)
+
+    @staticmethod
+    def collectors_from_queries(db, queries, collector_name):
+        collectors = []
+        for name, query in queries.items():
+            collectors.append(MockDb.collector_from_query(db, name, query['sql_text'], query['key_col']))
+        return collectors
 
     def get_records(self, query):
         return self.records[query].pop(0)
@@ -47,7 +57,9 @@ class StatsCollectorTests(unittest.TestCase):
                    'query_name 2': {'sql_text': 'mocked query 2', 'key_col': 'mocked_key_col'}}
         db = MockDb()
         es = MockElasticSearchAPI()
-        sc = StatCollector(es, db, queries)
+        collectors = MockDb.collectors_from_queries(db, queries, 'mock source type')
+
+        sc = StatCollector(es, collectors)
 
         sc.run()
         self.assertEquals(2, len(sc.api.records), 'All runs return measured values')
@@ -60,12 +72,13 @@ class StatsCollectorTests(unittest.TestCase):
         # queries = {'query name1': {'sql_text': 'mocked query', 'key_col': 'mocked_key_col'},
         #            'query_name 2': {'sql_text': 'mocked query 2', 'key_col': 'mocked_key_col'}}
 
-        stat_collectors = StatCollector.from_config_manager(config_manager, MockElasticSearchAPI, MockDb)
+        stat_collectors = StatCollector.from_config_manager(config_manager, MockElasticSearchAPI)
         self.assertEquals(len(stat_collectors), 2)
 
     def test_should_crate_statsCollector_from_config_with_different_collectorClasses(self):
         config_manager = ConfigManager.from_file('test.ini')
-        StatCollector.from_config_manager(config_manager)
+        sc = StatCollector.from_config_manager(config_manager)
+        self.assertIsNotNone(sc)
         self.fail('Not implemented, issue 1')
 
 if __name__ == '__main__':

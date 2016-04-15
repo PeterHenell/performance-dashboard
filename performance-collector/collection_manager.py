@@ -14,6 +14,9 @@ class CollectionManager:
     def append_collector(self, collector):
         self.collectors.append(collector)
 
+    def extend_collectors(self, collectors):
+        self.collectors.extend(collectors)
+
     def collect_data(self):
         result = []
         for c in self.collectors:
