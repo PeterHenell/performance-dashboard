@@ -25,7 +25,7 @@ class MockDb:
     def collectors_from_queries(db, queries, collector_name):
         collectors = []
         for name, query in queries.items():
-            collectors.append(MockDb.collector_from_query(db, name, query['sql_text'], query['key_col']))
+            collectors.append(MockDb.collector_from_query(db, name, query['sql_text'], query['key_col'], 'source type'))
         return collectors
 
     def get_records(self, query):
@@ -72,8 +72,8 @@ class StatsCollectorTests(unittest.TestCase):
         # queries = {'query name1': {'sql_text': 'mocked query', 'key_col': 'mocked_key_col'},
         #            'query_name 2': {'sql_text': 'mocked query 2', 'key_col': 'mocked_key_col'}}
 
-        stat_collectors = StatCollector.from_config_manager(config_manager, MockElasticSearchAPI)
-        self.assertEquals(len(stat_collectors), 2)
+        stat_collector = StatCollector.from_config_manager(config_manager, MockElasticSearchAPI)
+        self.assertTrue(stat_collector is not None)
 
     def test_should_crate_statsCollector_from_config_with_different_collectorClasses(self):
         config_manager = ConfigManager.from_file('test.ini')

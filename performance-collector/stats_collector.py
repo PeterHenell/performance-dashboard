@@ -31,14 +31,14 @@ class StatCollector:
         # For each source type get the configured sources
         for source_type_name, source_type in collector_types:
             sources = config_manager.get_sources_for_source_type(source_type_name)
-            for source_config in sources:
-                cls = ClassLoader.get_class_from_text(source_type_name, source_type)
-                instance = cls()
+            for source_config_key in sources:
+                instance = source_type()
+                config = config_manager.get_config(source_config_key[1])
                 collectors.extend(
                         instance.get_collectors(
-                                source_type_name, source_config))
+                                source_type_name, config))
 
-        es_api = es_class()
+        es_api = es_class(config_manager)
         stat_collector = StatCollector(es_api, collectors)
 
         return stat_collector
@@ -51,7 +51,7 @@ class StatCollector:
         if len(recorded_data) > 0:
             # recorded data is list of lists{of documents}
             for records in recorded_data:
-                self.api.consume_to_index(records, self.db.db_name, records['query_name'], timestamp)
+                self.api.consume_to_index(records, 'temporary_index_name', records['query_name'], timestamp)
 
     def initialize_elasticsearch(self, index_name, query_name):
         self.api.create_index(index_name)

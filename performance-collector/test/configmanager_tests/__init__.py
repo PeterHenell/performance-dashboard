@@ -14,10 +14,10 @@ class SomeAmazingClass:
 
 class ConfigManagerTestCase(unittest.TestCase):
 
-    def test_should_get_target_databases(self):
-        actual = manager.get_target_databases()
-        expected = [('database1', 'localhost.master'), ('database2', 'localhost.master'), ]
-        self.assertEquals(expected, actual)
+    # def test_should_get_target_databases(self):
+    #     actual = manager.get_target_databases()
+    #     expected = [('database1', 'localhost.master'), ('database2', 'localhost.master'), ]
+    #     self.assertEquals(expected, actual)
 
     def test_should_get_available_source_types(self):
         source_types = manager.get_available_source_types()

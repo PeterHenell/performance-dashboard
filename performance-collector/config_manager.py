@@ -62,13 +62,13 @@ class ConfigManager:
             h.setFormatter(formatter)
         self.logger.setLevel(logging_conf['log_level'])
 
-    def get_target_databases(self):
-        """
-        returns a list of tuples of [(databaseName, configKey), ...]
-        """
-        targets = self.config.items('Target.Databases')
-        res = [(key, path) for (key, path) in targets]
-        return res
+    # def get_target_databases(self):
+    #     """
+    #     returns a list of tuples of [(databaseName, configKey), ...]
+    #     """
+    #     targets = self.config.items('Target.Databases')
+    #     res = [(key, path) for (key, path) in targets]
+    #     return res
 
     def get_available_source_types(self):
         """
