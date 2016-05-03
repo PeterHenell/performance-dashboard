@@ -79,6 +79,7 @@ class StatsCollectorTests(unittest.TestCase):
         config_manager = ConfigManager.from_file('test.ini')
         sc = StatCollector.from_config_manager(config_manager)
         self.assertIsNotNone(sc)
+        self.assertTrue(len(sc.collection_manager.collectors) > 0)
         self.fail('Not implemented, issue 1')
 
 if __name__ == '__main__':
