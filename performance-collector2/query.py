@@ -1,3 +1,6 @@
+import types
+
+
 class Query:
     """
     Queries are a way for collectors to collect data. They are one way of getting data from the source.
@@ -17,6 +20,13 @@ class Query:
     """
 
     def __init__(self, get_data, query_name, key_column, mapping, non_data_fields):
+
+        assert isinstance(get_data, types.FunctionType), "get_data must be a function or callable class"
+        assert len(query_name) > 0, "query_name must be a string"
+        assert len(key_column) > 0, "key_column must have some value"
+        assert type(mapping) is dict, "mapping must be a dictionary"
+        assert type(non_data_fields) is list, "non_data_fields must be a list"
+
         self.query_name = query_name
         self.key_column = key_column
         self.mapping = mapping

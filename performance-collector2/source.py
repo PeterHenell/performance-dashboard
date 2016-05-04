@@ -21,6 +21,7 @@ class Source:
     """
 
     def __init__(self, source_name, query):
+        assert type(query) is Query
         self.source_name = source_name
         self.cache = DataRowCache()
         self.query = query

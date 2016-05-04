@@ -17,8 +17,8 @@ class ConfigManagerTestCase(unittest.TestCase):
     def test_should_get_available_source_types(self):
         source_types = manager.get_available_source_types()
         for c in source_types:
-            print('%s: %s' % (c.name, c.col_type))
-            c = c.col_type()
+            print('%s: %s' % (c.name, c.source_class))
+            c = c.source_class()
             self.assertTrue(c is not None)
 
     def test_should_get_sources_of_source_type(self):

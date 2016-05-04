@@ -32,10 +32,12 @@ class ClassLoader:
         return c
 
 
-class CollectorType:
+class SourceType:
     def __init__(self, class_name, cls):
         self.name = class_name
-        self.col_type = cls
+        self.source_class = cls
+
+
 
 
 class ConfigManager:
@@ -74,7 +76,7 @@ class ConfigManager:
         """
         collector_types = self.config.items('SourceTypes')
         types = [(key, ClassLoader.get_class_from_text(key, path)) for (key, path) in collector_types]
-        collector_types = [CollectorType(n, t) for (n, t) in types]
+        collector_types = [SourceType(n, t) for (n, t) in types]
 
         return collector_types
 
