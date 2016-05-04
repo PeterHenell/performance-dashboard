@@ -7,6 +7,28 @@ from source import Source
 from sql_server_source.query_store import QueryStore
 
 
+class SQLExecutor:
+    def __init__(self, query_text, conn):
+        self.query_text = query_text
+        self.conn = conn
+
+    def __call__(self, *args, **kwargs):
+        return self.get_records(self.query_text)
+
+    def get_records(self, sql):
+        cur = self.conn.cursor()
+        cur.execute(sql)
+
+        column_names = [column[0] for column in cur.description]
+        rows = cur.fetchall()
+        cur.close()
+
+        DBRecord = namedtuple('DBRecord', column_names)
+        res = [r for r in map(DBRecord._make, rows)]
+
+        return [r._asdict() for r in res]
+
+
 class SQLServerSource:
     def __init__(self):
         self.conn = None
@@ -24,12 +46,14 @@ class SQLServerSource:
         self.conn = SQLServerSource.get_connection(config)
         sources = []
         for sqlQry in self.query_store.queries:
+            executor = SQLExecutor(sqlQry.query_text, self.conn)
             q = Query(key_column=sqlQry.key_column,
                       query_name=sqlQry.query_name,
                       mapping={},
                       non_data_fields=[],
-                      get_data=lambda: self.get_records(sqlQry.query_text))
-            s = Source('%s@%s' % (config['database'], config['host']), q)
+                      get_data=executor)
+            # Source name is the host name for now
+            s = Source(config['host'], q)
             sources.append(s)
         return sources
 
@@ -44,19 +68,4 @@ class SQLServerSource:
 
         return connection
 
-    def get_records(self, sql):
-        cur = self.conn.cursor()
-        cur.execute(sql)
 
-        column_names = [column[0] for column in cur.description]
-        rows = cur.fetchall()
-        cur.close()
-
-        DBRecord = namedtuple('DBRecord', column_names)
-        res = [r for r in map(DBRecord._make, rows)]
-
-        return [r._asdict() for r in res]
-
-    def execute(self, sql):
-        crs = self.conn.cursor()
-        crs.execute(sql)

@@ -1,8 +1,10 @@
 class SqlQuery:
-    def __init__(self, query_text, query_name, key_column):
+    def __init__(self, query_text, query_name, key_column, mapping={}, non_data_fields=[]):
         self.query_text = query_text
         self.query_name = query_name
         self.key_column = key_column
+        self.mapping = mapping
+        self.non_data_fields = non_data_fields
 
 
 class QueryStore:

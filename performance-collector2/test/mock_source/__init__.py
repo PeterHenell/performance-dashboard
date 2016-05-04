@@ -1,5 +1,6 @@
 from source import Source
 from query import Query
+from collections import deque
 
 
 class MockSourceImpl:
@@ -8,6 +9,8 @@ class MockSourceImpl:
                       query_name='Mock',
                       mapping={},
                       non_data_fields=[],
-                      get_data=lambda: ['Mocked result'])
+                      get_data=lambda: [MockSourceImpl.records.pop()])
 
         return [Source('', query)]
+
+MockSourceImpl.records = deque([])

@@ -31,13 +31,25 @@ class SourceManagerTests(unittest.TestCase):
     def test_should_load_from_config_manager(self):
         sm = SourceManager()
         sm.load_from_config_manager(config_manager)
-        self.assertTrue(len(sm.sources) > 1)
+        self.assertTrue(len(sm.sources) == 1)
 
     def test_should_load_sql_server_source(self):
         manager = ConfigManager.from_file('sql_server.ini')
         sm = SourceManager()
         sm.load_from_config_manager(manager)
         self.assertTrue(len(sm.sources) > 1)
+
+    def test_should_get_result_from_source(self):
+        manager = ConfigManager.from_file('test.ini')
+
+        MockSourceImpl.records.clear()
+        MockSourceImpl.records.append({'a': 10})
+
+        sm = SourceManager()
+        sm.load_from_config_manager(manager)
+
+        for (source, records) in sm.get_data():
+            self.assertEquals(records, [{'a': 10}])
 
 
 if __name__ == '__main__':

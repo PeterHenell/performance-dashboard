@@ -21,7 +21,8 @@ class Query:
 
     def __init__(self, get_data, query_name, key_column, mapping, non_data_fields):
 
-        assert isinstance(get_data, types.FunctionType), "get_data must be a function or callable class"
+        assert isinstance(get_data, types.FunctionType) \
+               or callable(get_data), "get_data must be a function or callable class"
         assert len(query_name) > 0, "query_name must be a string"
         assert len(key_column) > 0, "key_column must have some value"
         assert type(mapping) is dict, "mapping must be a dictionary"
@@ -32,3 +33,8 @@ class Query:
         self.mapping = mapping
         self.non_data_fields = non_data_fields
         self.get_data = get_data
+
+    def get_data(self):
+        result = self.get_data()
+        assert type(result) is list, "Result from get_data function must be list of dict"
+        return result

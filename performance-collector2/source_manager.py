@@ -37,3 +37,9 @@ class SourceManager:
             sources = impl_instance.get_sources(conf)
             assert type(sources) is list, "return value from get_sources must be a list of Source"
             return sources
+
+    def get_data(self):
+        for s in self.sources:
+            data = s.get_records()
+            assert type(data) is list, "Result from source must be a list of dict"
+            yield (s, data)
