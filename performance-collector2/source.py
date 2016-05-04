@@ -23,11 +23,13 @@ class Source:
     def __init__(self, source_name, query):
         assert type(query) is Query
         self.source_name = source_name
-        self.cache = DataRowCache()
         self.query = query
+        self.cache = DataRowCache(query.key_column)
 
     def get_records(self):
-        return self.query.get_data()
+        records = self.query.get_data()
+        self.cache.cached_records = records
+        return records
 
 
 class DataRowCache:
@@ -35,19 +37,43 @@ class DataRowCache:
     Keeps cache of data_rows based on key
     """
 
+    def __init__(self, data_key_column):
+        """
+        :param data_key_column: the name of the key in the result (ie DatabaseID)
+        """
+        self.cached_records = []
+        self.data_key_column = data_key_column
 
-class DataRows:
-    """
-    DTO class.
+    def get_row(self, key_value):
+        """
+        Get the cached record which have the data_key_column = key_value
+        :param key_value:
+        :return:
+        """
+        cached_row = self.find_row_by_key(key_value)
+        assert type(cached_row) is dict or None
+        return cached_row
 
-    list of dict data [{a: 10, c: 'peter'},]
+    def find_row_by_key(self, key):
+        if len(self.cached_records) > 0:
+            for row in self.cached_records:
+                if row[self.data_key_column] == key:
+                    return row
+        return None
 
-    append the source_name to the result to make it possible to filter and group on
-            the database_name or server_name whichever is used.
-    """
+
+class DeltaRow:
+    def __init__(self, key_column_name, timestamp):
+        self.key_column_name = key_column_name
+        self.timestamp = timestamp
+        self.delta_fields = {}
+
+    def add_field(self, delta_field):
+        assert type(delta_field) is DeltaField
+        self.delta_fields[delta_field.field_name] = delta_field
 
 
-class DeltaRows:
+class DeltaField:
     """
     DTO class.
 
@@ -59,3 +85,10 @@ class DeltaRows:
             <value>_previous
             timestamp
     """
+
+    def __init__(self, field_name, measured, delta=None, previous=None):
+        self.field_name = field_name
+        self.measured = measured
+
+        self.delta = delta
+        self.previous = previous

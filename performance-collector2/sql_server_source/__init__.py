@@ -42,7 +42,7 @@ class SQLServerSource:
         :return: a list of Sources with their query set, connected and ready to go.
         """
 
-        # TODO: it might be possible to reuse the same connection for all the queries.
+        # TODO: as long as things are seriel then we can share the connection
         self.conn = SQLServerSource.get_connection(config)
         sources = []
         for sqlQry in self.query_store.queries:
