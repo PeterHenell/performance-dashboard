@@ -72,5 +72,22 @@ class StatCalculatorTestCase(unittest.TestCase):
         self.assertEquals(calculated.delta_fields['v2'].delta, None)
         self.assertEquals(calculated.delta_fields['v2'].previous, None)
 
+    def test_should_not_calculate_text_fields(self):
+        row = {'k': 1, 'v': 200, 'v2': 'abc'}
+        cached_row = {'k': 1, 'v': 50, 'v2': 'def'}
+
+        calculated = StatCalculator.calculate_row_delta(row=row,
+                                                        cached_row=cached_row,
+                                                        data_key_col='k',
+                                                        timestamp=1)
+
+        self.assertEquals(calculated.delta_fields['v'].measured, 200)
+        self.assertEquals(calculated.delta_fields['v'].delta, 150)
+        self.assertEquals(calculated.delta_fields['v'].previous, 50)
+
+        self.assertEquals(calculated.delta_fields['v2'].measured, 'abc')
+        self.assertEquals(calculated.delta_fields['v2'].delta, None)
+        self.assertEquals(calculated.delta_fields['v2'].previous, None)
+
 if __name__ == '__main__':
     unittest.main()
