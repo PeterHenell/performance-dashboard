@@ -24,8 +24,9 @@ class SQLServerSourceTestCase(unittest.TestCase):
         self.assertIsNotNone(f.cache)
 
     def test_should_execute_query(self):
-        sm = SourceManager.load_from_config_manager(config_manager)
-        for (source, data) in sm.get_data():
+        sm = SourceManager.from_config_manager(config_manager)
+        for source in sm.sources:
+            data = sm.get_data(source)
             self.assertTrue(len(data) > 0)
             print(data)
             print(source.query.query_name)

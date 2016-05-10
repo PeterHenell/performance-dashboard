@@ -1,5 +1,5 @@
 from config_manager import SourceType
-from source import Source
+from source import Source, DeltaCollection
 
 
 class SourceManager:
@@ -17,7 +17,7 @@ class SourceManager:
         self.sources = []
 
     @staticmethod
-    def load_from_config_manager(config_manager):
+    def from_config_manager(config_manager):
         sm = SourceManager()
         source_types = config_manager.get_available_source_types()
 
@@ -42,8 +42,8 @@ class SourceManager:
             assert type(sources) is list, "return value from get_sources must be a list of Source"
             return sources
 
-    def get_data(self):
-        for s in self.sources:
-            data = s.get_records()
-            assert type(data) is list, "Result from source must be a list of dict"
-            yield (s, data)
+    def get_data(self, source):
+        # for s in self.sources:
+        data = source.get_records()
+        assert type(data) is list, "Result from source must be a list of dict"
+        return (source, data)

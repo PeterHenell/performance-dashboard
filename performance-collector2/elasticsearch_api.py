@@ -10,3 +10,7 @@ class ElasticsearchAPI:
         Comparable.
         Less indexes.
     """
+
+
+    def consume_collection(self, delta_collection):
+        pass

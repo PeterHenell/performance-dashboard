@@ -62,6 +62,18 @@ class DataRowCache:
         return None
 
 
+class RowCollection(list):
+    def __init__(self, source, items):
+        super().__init__(items)
+        self.source = source
+
+
+class DeltaCollection(list):
+    def __init__(self, source, items):
+        super().__init__(items)
+        self.source = source
+
+
 class DeltaRow:
     def __init__(self, key_column_name, timestamp):
         self.key_column_name = key_column_name
@@ -71,6 +83,9 @@ class DeltaRow:
     def add_field(self, delta_field):
         assert type(delta_field) is DeltaField
         self.delta_fields[delta_field.field_name] = delta_field
+
+    def __getitem__(self, key):
+        return self.delta_fields[key]
 
 
 class DeltaField:

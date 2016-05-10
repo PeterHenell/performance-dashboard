@@ -57,6 +57,11 @@ class StatCalculator:
             return None, None
 
     @staticmethod
+    def calculate_collection_delta(rows):
+        pass
+
+
+    @staticmethod
     def is_number(s):
         if not s:
             return False

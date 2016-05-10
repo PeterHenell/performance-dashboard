@@ -4,7 +4,6 @@ from stat_calculator import StatCalculator
 
 
 class StatCalculatorTestCase(unittest.TestCase):
-
     def test_calculate_stats(self):
         row = {'k': 1, 'v': 1000}
         cached_row = {'k': 1, 'v': 700}
@@ -76,18 +75,38 @@ class StatCalculatorTestCase(unittest.TestCase):
         row = {'k': 1, 'v': 200, 'v2': 'abc'}
         cached_row = {'k': 1, 'v': 50, 'v2': 'def'}
 
-        calculated = StatCalculator.calculate_row_delta(row=row,
-                                                        cached_row=cached_row,
-                                                        data_key_col='k',
-                                                        timestamp=1)
+        calculated_row = StatCalculator.calculate_row_delta(row=row,
+                                                            cached_row=cached_row,
+                                                            data_key_col='k',
+                                                            timestamp=1)
 
-        self.assertEquals(calculated.delta_fields['v'].measured, 200)
-        self.assertEquals(calculated.delta_fields['v'].delta, 150)
-        self.assertEquals(calculated.delta_fields['v'].previous, 50)
+        self.assertEquals(calculated_row.delta_fields['v'].measured, 200)
+        self.assertEquals(calculated_row.delta_fields['v'].delta, 150)
+        self.assertEquals(calculated_row.delta_fields['v'].previous, 50)
 
-        self.assertEquals(calculated.delta_fields['v2'].measured, 'abc')
-        self.assertEquals(calculated.delta_fields['v2'].delta, None)
-        self.assertEquals(calculated.delta_fields['v2'].previous, None)
+        self.assertEquals(calculated_row.delta_fields['v2'].measured, 'abc')
+        self.assertEquals(calculated_row.delta_fields['v2'].delta, None)
+        self.assertEquals(calculated_row.delta_fields['v2'].previous, None)
+
+    def test_should_get_value_from_index_also(self):
+        row = {'k': 1, 'v': 200, 'v2': 'abc'}
+        cached_row = {'k': 1, 'v': 50, 'v2': 'def'}
+
+        calculated_row = StatCalculator.calculate_row_delta(row=row,
+                                                            cached_row=cached_row,
+                                                            data_key_col='k',
+                                                            timestamp=1)
+        # DeltaRow is indexable
+        self.assertEquals(
+                calculated_row.delta_fields['v'].measured,
+                calculated_row['v'].measured)
+        self.assertEquals(
+                calculated_row.delta_fields['v'].delta,
+                calculated_row['v'].delta)
+        self.assertEquals(
+                calculated_row.delta_fields['v'].previous,
+                calculated_row['v'].previous)
+
 
 if __name__ == '__main__':
     unittest.main()
