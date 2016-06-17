@@ -1,5 +1,8 @@
+from datetime import time
+from queue import Queue
 from config_manager import SourceType
-from source import Source, DeltaCollection
+from source import Source, DataRowCache
+from stoppable_worker import ClosableQueue
 
 
 class SourceManager:
@@ -13,12 +16,14 @@ class SourceManager:
     returns tuple (source, result) on get_deltas()
     """
 
-    def __init__(self):
+    def __init__(self, output_queue):
         self.sources = []
+        assert type(output_queue) is ClosableQueue
+        self.output_queue = output_queue
 
     @staticmethod
-    def from_config_manager(config_manager):
-        sm = SourceManager()
+    def from_config_manager(config_manager, output_queue):
+        sm = SourceManager(output_queue)
         source_types = config_manager.get_available_source_types()
 
         # For each collector type get the configured sources
@@ -42,8 +47,21 @@ class SourceManager:
             assert type(sources) is list, "return value from get_sources must be a list of Source"
             return sources
 
-    def get_data(self, source):
-        # for s in self.sources:
-        data = source.get_records()
-        assert type(data) is list, "Result from source must be a list of dict"
-        return (source, data)
+    def process_all_sources(self):
+        timestamp = time.now
+        for s in self.sources:
+            data = s.get_records()
+            assert type(data) is list, "Result from source must be a list of dict"
+            collected = SourceData(data, s.cache, s.data_key_column, timestamp)
+            self.output_queue.put(collected)
+
+
+class SourceData:
+    def __init__(self, data_rows, cache, key_col, timestamp):
+        assert type(cache) is DataRowCache
+        assert type(data_rows) is list
+
+        self.rows = data_rows
+        self.cache = cache
+        self.key_col = key_col
+        self.timestamp = timestamp
