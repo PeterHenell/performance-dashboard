@@ -55,8 +55,6 @@ class SourceManager:
         timestamp = datetime.now().strftime("%Y-%m-%dT%H:%M:%S")
         for s in self.sources:
             data = s.get_records()
-            # print('Data from get_records %s' % data)
-            # print(data)
             assert type(data) is list, "Result from source must be a list of dict"
             collected = SourceData(data, s, timestamp)
             self.output_queue.put(collected)

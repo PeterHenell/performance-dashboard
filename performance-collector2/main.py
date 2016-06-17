@@ -36,7 +36,7 @@ def main(arguments):
     # for stat_collector in stat_collectors:
     if len(arguments) == 2:
         if arguments[1] == 'truncate_data':
-            print('Truncating all data')
+            print('not implemented')
             # stat_collector.cleanup(config_manager)
 
     stat_manager = StatManager(config_manager)

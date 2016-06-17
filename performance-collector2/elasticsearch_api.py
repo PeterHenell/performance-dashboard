@@ -57,7 +57,6 @@ class ElasticsearchAPI:
                 "_source": doc.as_dict(),
                 }
             actions.append(action)
-        # print(actions)
         helpers.bulk(self.es, actions)
         self.es.indices.refresh()
 
@@ -69,11 +68,9 @@ class ElasticsearchAPI:
 
     def init_source(self, source):
         assert type(source) is Source
-        query_name = source.query.query_name
         db_name = source.source_name
 
-        index_name = self.get_index_names(
-                db_name=db_name)
+        index_name = self.get_index_names(db_name=db_name)
 
         self.create_index(index_name)
         self.set_mapping(index_name, source.query.query_name, source.query.mapping)
