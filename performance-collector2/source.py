@@ -64,18 +64,6 @@ class DataRowCache:
         return None
 
 
-# class RowCollection(list):
-#     def __init__(self, source, items):
-#         super().__init__(items)
-#         self.source = source
-#
-#
-# class DeltaCollection(list):
-#     def __init__(self, source, items):
-#         super().__init__(items)
-#         self.source = source
-
-
 class DeltaRow:
     def __init__(self, key_column_name, timestamp):
         self.key_column_name = key_column_name
@@ -89,7 +77,7 @@ class DeltaRow:
     def __getitem__(self, key):
         return self.delta_fields[key]
 
-    def to_dict(self):
+    def as_dict(self):
         d = {}
         for name, field in self.delta_fields.items():
             d[name + '_measured'] = field.measured
@@ -101,7 +89,7 @@ class DeltaRow:
         return d
 
     def __repr__(self):
-        return self.to_dict()
+        return self.as_dict()
 
 
 class DeltaField:

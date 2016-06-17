@@ -54,7 +54,7 @@ class ElasticsearchAPI:
             action = {
                 "_index": index_name,
                 "_type": query_name + '_type',
-                "_source": doc.to_dict(),
+                "_source": doc.as_dict(),
                 }
             actions.append(action)
         # print(actions)
@@ -78,25 +78,18 @@ class ElasticsearchAPI:
         self.create_index(index_name)
         self.set_mapping(index_name, source.query.query_name, source.query.mapping)
 
-    def set_mapping(self, index_name, query_name, mapping):
-        print('Setting mapping for %s' % index_name)
-        print('todo: use query mapping instead of hardcoded mapping')
+    def set_mapping(self, index_name, query_name, source_mapping):
         mapping = {
             "properties": {
                 "timestamp": {
                     "type": "date",
                     "format": "date_hour_minute_second"
-                },
-                "statement_text": {
-                    "index": "not_analyzed",
-                    "type": "string"
-                },
-                "file_id": {
-                    "index": "not_analyzed",
-                    "type": "string"
                 }
             }
         }
+        for k, v in source_mapping.items():
+            # print('%s %s' % (k, v))
+            mapping['properties'][k] = v
 
         self.es.indices.put_mapping(
             index=index_name,

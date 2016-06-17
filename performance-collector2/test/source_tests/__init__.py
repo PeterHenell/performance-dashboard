@@ -31,7 +31,7 @@ class SourceTests(unittest.TestCase):
         dr.add_field(DeltaField('a', measured='key value'))
         dr.add_field(DeltaField('b', measured=100, delta=50, previous=75))
 
-        actual = dr.to_dict()
+        actual = dr.as_dict()
         self.assertEquals(actual, {'a_measured': 'key value', 'b_measured': 100, 'b_delta': 50, 'b_previous': 75,
                                    'timestamp': 'timestamp'})
 

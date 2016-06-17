@@ -9,66 +9,68 @@ class SqlQuery:
 
 class QueryStore:
     def __init__(self):
-        self.queries = []
+        self.queries = [self.get_dm_os_wait_stats(),
+                        self.get_active_sessions(),
+                        self.get_dm_io_virtual_file_stats(),
+                        self.get_dm_os_performance_counters(),
+                        self.get_partition_stats(),
+                        self.get_query_stats()]
 
-        for k, v in QueryStore.get_query_dict().items():
-            query_name = k
-            query_text = v['sql_text']
-            key_column = v['key_col']
-            q = SqlQuery(query_name=query_name, query_text=query_text, key_column=key_column)
-            self.queries.append(q)
+    def get_dm_os_wait_stats(self):
+        sql_text = """
+        -- PerfCollector
+        SELECT wait_type ,
+               waiting_tasks_count ,
+               wait_time_ms ,
+               max_wait_time_ms ,
+               signal_wait_time_ms
+        FROM sys.dm_os_wait_stats
+        WHERE waiting_tasks_count + wait_time_ms + max_wait_time_ms + signal_wait_time_ms > 0
+        and [wait_type] NOT IN (
+            N'BROKER_EVENTHANDLER',             N'BROKER_RECEIVE_WAITFOR',
+            N'BROKER_TASK_STOP',                N'BROKER_TO_FLUSH',
+            N'BROKER_TRANSMITTER',              N'CHECKPOINT_QUEUE',
+            N'CHKPT',                           N'CLR_AUTO_EVENT',
+            N'CLR_MANUAL_EVENT',                N'CLR_SEMAPHORE',
+            N'DBMIRROR_DBM_EVENT',              N'DBMIRROR_EVENTS_QUEUE',
+            N'DBMIRROR_WORKER_QUEUE',           N'DBMIRRORING_CMD',
+            N'DIRTY_PAGE_POLL',                 N'DISPATCHER_QUEUE_SEMAPHORE',
+            N'EXECSYNC',                        N'FSAGENT',
+            N'FT_IFTS_SCHEDULER_IDLE_WAIT',     N'FT_IFTSHC_MUTEX',
+            N'HADR_CLUSAPI_CALL',               N'HADR_FILESTREAM_IOMGR_IOCOMPLETION',
+            N'HADR_LOGCAPTURE_WAIT',            N'HADR_NOTIFICATION_DEQUEUE',
+            N'HADR_TIMER_TASK',                 N'HADR_WORK_QUEUE',
+            N'KSOURCE_WAKEUP',                  N'LAZYWRITER_SLEEP',
+            N'LOGMGR_QUEUE',                    N'ONDEMAND_TASK_QUEUE',
+            N'PWAIT_ALL_COMPONENTS_INITIALIZED',
+            N'QDS_PERSIST_TASK_MAIN_LOOP_SLEEP',
+            N'QDS_SHUTDOWN_QUEUE',
+            N'QDS_CLEANUP_STALE_QUERIES_TASK_MAIN_LOOP_SLEEP',
+            N'REQUEST_FOR_DEADLOCK_SEARCH',     N'RESOURCE_QUEUE',
+            N'SERVER_IDLE_CHECK',               N'SLEEP_BPOOL_FLUSH',
+            N'SLEEP_DBSTARTUP',                 N'SLEEP_DCOMSTARTUP',
+            N'SLEEP_MASTERDBREADY',             N'SLEEP_MASTERMDREADY',
+            N'SLEEP_MASTERUPGRADED',            N'SLEEP_MSDBSTARTUP',
+            N'SLEEP_SYSTEMTASK',                N'SLEEP_TASK',
+            N'SLEEP_TEMPDBSTARTUP',             N'SNI_HTTP_ACCEPT',
+            N'SP_SERVER_DIAGNOSTICS_SLEEP',     N'SQLTRACE_BUFFER_FLUSH',
+            N'SQLTRACE_INCREMENTAL_FLUSH_SLEEP',
+            N'SQLTRACE_WAIT_ENTRIES',           N'WAIT_FOR_RESULTS',
+            N'WAITFOR',                         N'WAITFOR_TASKSHUTDOWN',
+            N'WAIT_XTP_HOST_WAIT',              N'WAIT_XTP_OFFLINE_CKPT_NEW_LOG',
+            N'WAIT_XTP_CKPT_CLOSE',             N'XE_DISPATCHER_JOIN',
+            N'XE_DISPATCHER_WAIT',              N'XE_TIMER_EVENT',
+            N'DIRTY_PAGE_POLL',                 N'HADR_FILESTREAM_IOMGR_IOCOMPLETION')"""
+        key_col = 'wait_type'
+        mapping = {}
+        return SqlQuery(query_text=sql_text,
+                        query_name='dm_os_wait_stats',
+                        key_column=key_col,
+                        mapping=mapping,
+                        non_data_fields=[])
 
-    @staticmethod
-    def get_query_dict():
-        return {"dm_os_wait_stats": {'sql_text': """
-                                -- PerfCollector
-                                SELECT wait_type ,
-                                       waiting_tasks_count ,
-                                       wait_time_ms ,
-                                       max_wait_time_ms ,
-                                       signal_wait_time_ms
-                                FROM sys.dm_os_wait_stats
-                                WHERE waiting_tasks_count + wait_time_ms + max_wait_time_ms + signal_wait_time_ms > 0
-                                and [wait_type] NOT IN (
-        N'BROKER_EVENTHANDLER',             N'BROKER_RECEIVE_WAITFOR',
-        N'BROKER_TASK_STOP',                N'BROKER_TO_FLUSH',
-        N'BROKER_TRANSMITTER',              N'CHECKPOINT_QUEUE',
-        N'CHKPT',                           N'CLR_AUTO_EVENT',
-        N'CLR_MANUAL_EVENT',                N'CLR_SEMAPHORE',
-        N'DBMIRROR_DBM_EVENT',              N'DBMIRROR_EVENTS_QUEUE',
-        N'DBMIRROR_WORKER_QUEUE',           N'DBMIRRORING_CMD',
-        N'DIRTY_PAGE_POLL',                 N'DISPATCHER_QUEUE_SEMAPHORE',
-        N'EXECSYNC',                        N'FSAGENT',
-        N'FT_IFTS_SCHEDULER_IDLE_WAIT',     N'FT_IFTSHC_MUTEX',
-        N'HADR_CLUSAPI_CALL',               N'HADR_FILESTREAM_IOMGR_IOCOMPLETION',
-        N'HADR_LOGCAPTURE_WAIT',            N'HADR_NOTIFICATION_DEQUEUE',
-        N'HADR_TIMER_TASK',                 N'HADR_WORK_QUEUE',
-        N'KSOURCE_WAKEUP',                  N'LAZYWRITER_SLEEP',
-        N'LOGMGR_QUEUE',                    N'ONDEMAND_TASK_QUEUE',
-        N'PWAIT_ALL_COMPONENTS_INITIALIZED',
-        N'QDS_PERSIST_TASK_MAIN_LOOP_SLEEP',
-        N'QDS_SHUTDOWN_QUEUE',
-        N'QDS_CLEANUP_STALE_QUERIES_TASK_MAIN_LOOP_SLEEP',
-        N'REQUEST_FOR_DEADLOCK_SEARCH',     N'RESOURCE_QUEUE',
-        N'SERVER_IDLE_CHECK',               N'SLEEP_BPOOL_FLUSH',
-        N'SLEEP_DBSTARTUP',                 N'SLEEP_DCOMSTARTUP',
-        N'SLEEP_MASTERDBREADY',             N'SLEEP_MASTERMDREADY',
-        N'SLEEP_MASTERUPGRADED',            N'SLEEP_MSDBSTARTUP',
-        N'SLEEP_SYSTEMTASK',                N'SLEEP_TASK',
-        N'SLEEP_TEMPDBSTARTUP',             N'SNI_HTTP_ACCEPT',
-        N'SP_SERVER_DIAGNOSTICS_SLEEP',     N'SQLTRACE_BUFFER_FLUSH',
-        N'SQLTRACE_INCREMENTAL_FLUSH_SLEEP',
-        N'SQLTRACE_WAIT_ENTRIES',           N'WAIT_FOR_RESULTS',
-        N'WAITFOR',                         N'WAITFOR_TASKSHUTDOWN',
-        N'WAIT_XTP_HOST_WAIT',              N'WAIT_XTP_OFFLINE_CKPT_NEW_LOG',
-        N'WAIT_XTP_CKPT_CLOSE',             N'XE_DISPATCHER_JOIN',
-        N'XE_DISPATCHER_WAIT',              N'XE_TIMER_EVENT',
-        N'DIRTY_PAGE_POLL',                 N'HADR_FILESTREAM_IOMGR_IOCOMPLETION')
-                                """,
-                                     'key_col': 'wait_type'
-                                     },
-
-                "query_stats": {'sql_text': """
+    def get_query_stats(self):
+        sql_text = """
                         -- PerfCollector
                         SELECT
                            raw_sql AS statement_text,
@@ -98,33 +100,51 @@ class QueryStore:
                         CROSS APPLY (SELECT text, '' FROM sys.dm_exec_sql_text(sql_handle)
                                     ) AS query(raw_sql, statement_text)
                         where raw_sql not like '%PerfCollector%'
-                        GROUP BY query.raw_sql
+                        GROUP BY query.raw_sql"""
+        key_col = 'statement_text'
+        mapping = {"statement_text": {
+            "index": "not_analyzed",
+            "type": "string"
+        }}
+        query_name = 'query_stats'
+        return SqlQuery(query_text=sql_text,
+                        query_name=query_name,
+                        key_column=key_col,
+                        mapping=mapping,
+                        non_data_fields=[])
 
+    def get_dm_io_virtual_file_stats(self):
+        sql_text = """
+            -- PerfCollector
+            SELECT db_name(database_id) + '(' + CAST(file_id AS VARCHAR(10)) + ')' as file_id,
+                   num_of_reads ,
+                   num_of_bytes_read ,
+                   io_stall_read_ms ,
+                   io_stall_queued_read_ms ,
+                   num_of_writes ,
+                   num_of_bytes_written ,
+                   io_stall_write_ms ,
+                   io_stall_queued_write_ms ,
+                   io_stall ,
+                   size_on_disk_bytes
+            FROM sys.dm_io_virtual_file_stats(NULL, NULL)
+            WHERE database_id > 4"""
 
-                                         """,
-                                'key_col': 'statement_text'
-                                },
+        key_col = 'file_id'
+        mapping = {"file_id": {
+            "index": "not_analyzed",
+            "type": "string"
+        }}
+        query_name = 'dm_io_virtual_file_stats'
+        return SqlQuery(query_text=sql_text,
+                        query_name=query_name,
+                        key_column=key_col,
+                        mapping=mapping,
+                        non_data_fields=[])
 
-                "dm_io_virtual_file_stats": {'sql_text': """
-    -- PerfCollector
-    SELECT db_name(database_id) + '(' + CAST(file_id AS VARCHAR(10)) + ')' as file_id,
-           num_of_reads ,
-           num_of_bytes_read ,
-           io_stall_read_ms ,
-           io_stall_queued_read_ms ,
-           num_of_writes ,
-           num_of_bytes_written ,
-           io_stall_write_ms ,
-           io_stall_queued_write_ms ,
-           io_stall ,
-           size_on_disk_bytes
-    FROM sys.dm_io_virtual_file_stats(NULL, NULL)
-    WHERE database_id > 4
-    """,
-                                             'key_col': 'file_id'
-                                             },
-                "partition_stats": {'sql_text': """
-               -- PerfCollector
+    def get_partition_stats(self):
+        sql_text = """
+            -- PerfCollector
                 SET NOCOUNT ON;
 
                 DECLARE @partition_stats table(
@@ -206,11 +226,22 @@ class QueryStore:
                     [reserved_page_count],
                     [row_count]
 
-                FROM @partition_stats;
-               """, 'key_col': 'partition_key'
-                                    },
-                "active_sessions": {'sql_text': """
-               -- PerfCollector
+                FROM @partition_stats;"""
+        key_col = 'partition_key'
+        mapping = {"partition_key": {
+            "index": "not_analyzed",
+            "type": "string"
+        }}
+        query_name = 'partition_stats'
+        return SqlQuery(query_text=sql_text,
+                        query_name=query_name,
+                        key_column=key_col,
+                        mapping=mapping,
+                        non_data_fields=[])
+
+    def get_active_sessions(self):
+        sql_text = """
+             -- PerfCollector
                 SELECT session_id ,
                        cpu_time ,
                        memory_usage ,
@@ -222,11 +253,19 @@ class QueryStore:
                        logical_reads ,
                        row_count
                 FROM sys.dm_exec_sessions
-                WHERE session_id > 50
-               """, 'key_col': 'session_id'},
+                WHERE session_id > 50"""
+        key_col = 'session_id'
+        mapping = {}
+        query_name = 'active_sessions'
+        return SqlQuery(query_text=sql_text,
+                        query_name=query_name,
+                        key_column=key_col,
+                        mapping=mapping,
+                        non_data_fields=[])
 
-                "dm_os_performance_counters": {'sql_text': """
-               -- PerfCollector
+    def get_dm_os_performance_counters(self):
+        sql_text = """
+                   -- PerfCollector
                 SELECT  'dm_os_performance_counters'  AS key_col
                     , [Page life expectancy] AS [Page_life_expectancy]
                     , CAST([Buffer cache hit ratio] AS DECIMAL(28, 6)) / CAST([Buffer cache hit ratio base] AS DECIMAL(28, 6)) AS [Cache_Hit_Ratio]
@@ -304,18 +343,15 @@ class QueryStore:
                                             , [Full Scans/sec]
                                             , [Page Splits/sec]
                                             )
-                        ) AS pivoted
-               """, 'key_col': 'key_col'}
-                }
-
-        # @staticmethod
-        # def get_query_text(query_name):
-        #     return QueryStore.queries[query_name]['sql_text']
-        #
-        # @staticmethod
-        # def get_query_key_col(query_name):
-        #     return QueryStore.queries[query_name]['key_col']
-        #
-        # @staticmethod
-        # def get_query_names(self):
-        #     return self.queries.keys()
+                        ) AS pivoted"""
+        key_col = 'key_col'
+        mapping = {"key_col": {
+            "index": "not_analyzed",
+            "type": "string"
+        }}
+        query_name = 'dm_os_performance_counters'
+        return SqlQuery(query_text=sql_text,
+                        query_name=query_name,
+                        key_column=key_col,
+                        mapping=mapping,
+                        non_data_fields=[])

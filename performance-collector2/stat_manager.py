@@ -44,9 +44,4 @@ class StatManager:
             thread.start()
 
         self.source_thread.join()
-        #
-        # self.delta_worker.join()
-        # self.delta_worker.stop()
-        #
-        # self.elastic_worker.join()
-        # self.elastic_worker.stop()
+        # TODO: can we stop gracefully?
