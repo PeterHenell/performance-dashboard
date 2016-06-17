@@ -79,6 +79,7 @@ class DeltaRow:
         self.key_column_name = key_column_name
         self.timestamp = timestamp
         self.delta_fields = {}
+        self.add_field(DeltaField('timestamp', timestamp))
 
     def add_field(self, delta_field):
         assert type(delta_field) is DeltaField

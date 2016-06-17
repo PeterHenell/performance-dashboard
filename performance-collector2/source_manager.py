@@ -52,16 +52,15 @@ class SourceManager:
         for s in self.sources:
             data = s.get_records()
             assert type(data) is list, "Result from source must be a list of dict"
-            collected = SourceData(data, s.cache, s.data_key_column, timestamp)
+            collected = SourceData(data, s, timestamp)
             self.output_queue.put(collected)
 
 
 class SourceData:
-    def __init__(self, data_rows, cache, key_col, timestamp):
-        assert type(cache) is DataRowCache
+    def __init__(self, data_rows, source, timestamp):
+        assert type(source) is Source
         assert type(data_rows) is list
 
         self.rows = data_rows
-        self.cache = cache
-        self.key_col = key_col
+        self.source = source
         self.timestamp = timestamp

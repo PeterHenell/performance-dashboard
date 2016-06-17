@@ -1,4 +1,4 @@
-from source import DeltaRow, DeltaField
+from source import DeltaRow, DeltaField, Source
 from source_manager import SourceData
 
 
@@ -60,15 +60,16 @@ class StatCalculator:
     @staticmethod
     def calculate_collection_delta(source_data):
         assert type(source_data) is SourceData
-        delta_rows = []
+        calculated = CalculatedData(source_data.source)
         for row in source_data.rows:
             assert type(row) is dict, "Each row in delta must be a dict"
-            row_key_value = row[source_data.key_col]
+            key_col = source_data.source.query.key_col
+            row_key_value = row[key_col]
             cached_row = source_data.cache.get_row(row_key_value)
 
-            delta_row = StatCalculator.calculate_row_delta(row, cached_row, source_data.key_col)
-            delta_rows.append(delta_row)
-        return delta_rows
+            calculated_delta_row = StatCalculator.calculate_row_delta(row, cached_row, key_col)
+            calculated.append(calculated_delta_row)
+        return calculated
 
     @staticmethod
     def is_number(s):
@@ -79,3 +80,18 @@ class StatCalculator:
             return True
         except ValueError:
             return False
+
+
+class CalculatedData:
+    def __init__(self, source):
+        assert type(source) is Source
+
+        self.delta_rows = []
+        self.source = source
+
+    def append(self, delta_row):
+        assert type(delta_row) is DeltaRow
+        self.delta_rows.append(delta_row)
+
+    def __len__(self):
+        return len(self.delta_rows)
