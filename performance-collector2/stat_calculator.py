@@ -1,4 +1,5 @@
 from source import DeltaRow, DeltaField
+from source_manager import SourceData
 
 
 class StatCalculator:
@@ -57,9 +58,17 @@ class StatCalculator:
             return None, None
 
     @staticmethod
-    def calculate_collection_delta(rows):
-        pass
+    def calculate_collection_delta(source_data):
+        assert type(source_data) is SourceData
+        delta_rows = []
+        for row in source_data.rows:
+            assert type(row) is dict, "Each row in delta must be a dict"
+            row_key_value = row[source_data.key_col]
+            cached_row = source_data.cache.get_row(row_key_value)
 
+            delta_row = StatCalculator.calculate_row_delta(row, cached_row, source_data.key_col)
+            delta_rows.append(delta_row)
+        return delta_rows
 
     @staticmethod
     def is_number(s):

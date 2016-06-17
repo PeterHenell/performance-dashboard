@@ -1,9 +1,10 @@
 import unittest
 
 from stat_calculator import StatCalculator
+from stoppable_worker import StoppableWorker, ClosableQueue
 
 
-class StatCalculatorTestCase(unittest.TestCase):
+class StatsCalculatorTestCase(unittest.TestCase):
     def test_calculate_stats(self):
         row = {'k': 1, 'v': 1000}
         cached_row = {'k': 1, 'v': 700}
@@ -23,7 +24,7 @@ class StatCalculatorTestCase(unittest.TestCase):
         self.assertEquals(calculated.delta_fields['v'].delta, 300)
         self.assertEquals(calculated.delta_fields['v'].previous, 700)
 
-    def test_calculate_stats_with_empy_cached_row(self):
+    def test_calculate_stats_with_empty_cached_row(self):
         row = {'k': 1, 'v': 1000}
         cached_row = {}
 
@@ -106,6 +107,19 @@ class StatCalculatorTestCase(unittest.TestCase):
         self.assertEquals(
                 calculated_row.delta_fields['v'].previous,
                 calculated_row['v'].previous)
+
+    # def test_should_run_in_worker(self):
+    #     delta_queue = ClosableQueue()
+    #     elastic_queue = ClosableQueue()
+    #
+    #     delta_queue.put({'a': 10})
+    #     delta_queue.put(delta_queue.SENTINEL)
+    #     delta_worker = StoppableWorker(StatCalculator.calculate_collection_delta, delta_queue, elastic_queue)
+    #
+    #     delta_worker.start()
+    #     delta_worker.join()
+    #
+    #     self.assertEquals(len(elastic_queue), 1)
 
 
 if __name__ == '__main__':
