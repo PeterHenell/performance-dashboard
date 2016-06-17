@@ -109,7 +109,7 @@ class ElasticsearchAPI:
 
     def get_index_names(self, db_name):
         hist = 'hist-%s' % (db_name.replace('\\', '-'))
-        return hist
+        return hist.lower()
 
     def create_index(self, index_name):
         print('Creating index %s' % index_name)

@@ -30,8 +30,7 @@ class StatManager:
         elastic_api.init(source_manager.sources)
 
         # TODO: Read wait time from config instead of using hardcoded here
-        # TODO: Use seconds instead of milliseconds
-        self.source_thread = TimedWorker(source_manager.process_all_sources, 5000)
+        self.source_thread = TimedWorker(source_manager.process_all_sources, 60)
         self.delta_worker = StoppableWorker(stat_calculator.calculate_collection_delta, delta_queue, elastic_queue)
         self.elastic_worker = StoppableWorker(elastic_api.consume_collection, elastic_queue, result_queue)
         self.log_completed_worker = LoggingWorker(result_queue.get)

@@ -44,10 +44,12 @@ class SourceManager:
         assert type(source_type) is SourceType, "source_type must be of type SourceType"
         configs = config_manager.get_config_for_source_name(source_type.name)
         impl_instance = source_type.source_class()
+        all_sources = []
         for conf in configs:
             sources = impl_instance.get_sources(conf)
             assert type(sources) is list, "return value from get_sources must be a list of Source"
-            return sources
+            all_sources.extend(sources)
+        return all_sources
 
     def process_all_sources(self):
         timestamp = datetime.now().strftime("%Y-%m-%dT%H:%M:%S")

@@ -38,8 +38,6 @@ class SourceType:
         self.source_class = cls
 
 
-
-
 class ConfigManager:
 
     def __init__(self, config):

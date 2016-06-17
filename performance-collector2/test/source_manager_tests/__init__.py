@@ -70,8 +70,10 @@ class SourceManagerTests(unittest.TestCase):
 
         self.assertEquals(len(delta_queue), 1)
 
-
-
+    def test_should_get_sources_from_multiple_servers(self):
+        cm = ConfigManager.from_file('multiple.ini')
+        source_manager = SourceManager.from_config_manager(cm, ClosableQueue())
+        self.assertEquals(len(source_manager.sources), 2)
 
 if __name__ == '__main__':
     unittest.main()

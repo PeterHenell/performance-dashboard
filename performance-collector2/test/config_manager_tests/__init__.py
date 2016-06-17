@@ -36,6 +36,10 @@ class ConfigManagerTestCase(unittest.TestCase):
         res = inst.verify_class_have_been_loaded()
         self.assertEquals('Yes, it works', res)
 
+    def test_should_get_multiple_sources_for_one_type(self):
+        cm = ConfigManager.from_file('multiple.ini')
+        configs = cm.get_config_for_source_name('MockSourceImpl')
+        self.assertEquals(len(configs), 2)
 
 if __name__ == '__main__':
     unittest.main()
