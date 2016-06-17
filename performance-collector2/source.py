@@ -62,16 +62,16 @@ class DataRowCache:
         return None
 
 
-class RowCollection(list):
-    def __init__(self, source, items):
-        super().__init__(items)
-        self.source = source
-
-
-class DeltaCollection(list):
-    def __init__(self, source, items):
-        super().__init__(items)
-        self.source = source
+# class RowCollection(list):
+#     def __init__(self, source, items):
+#         super().__init__(items)
+#         self.source = source
+#
+#
+# class DeltaCollection(list):
+#     def __init__(self, source, items):
+#         super().__init__(items)
+#         self.source = source
 
 
 class DeltaRow:
@@ -98,12 +98,10 @@ class DeltaField:
             <value>_measured
             <value>_delta
             <value>_previous
-            timestamp
     """
 
     def __init__(self, field_name, measured, delta=None, previous=None):
         self.field_name = field_name
         self.measured = measured
-
         self.delta = delta
         self.previous = previous

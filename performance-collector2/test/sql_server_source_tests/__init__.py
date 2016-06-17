@@ -3,6 +3,7 @@ import unittest
 from config_manager import ConfigManager
 from source_manager import SourceManager
 from sql_server_source import SQLServerSource, QueryStore
+from stoppable_worker import ClosableQueue
 
 config_manager = ConfigManager.from_file('sql_server.ini')
 
@@ -24,12 +25,15 @@ class SQLServerSourceTestCase(unittest.TestCase):
         self.assertIsNotNone(f.cache)
 
     def test_should_execute_query(self):
-        sm = SourceManager.from_config_manager(config_manager)
-        for source in sm.sources:
-            data = sm.get_data(source)
-            self.assertTrue(len(data) > 0)
-            print(data)
-            print(source.query.query_name)
+        delta_queue = ClosableQueue()
+        sm = SourceManager.from_config_manager(config_manager, delta_queue)
+        # for source in sm.sources:
+        #     data = sm.get_data(source)
+        #     self.assertTrue(len(data) > 0)
+        #     print(data)
+        #     print(source.query.query_name)
+        sm.process_all_sources()
+        self.assertEquals(len(delta_queue), 6)
 
 
 if __name__ == '__main__':

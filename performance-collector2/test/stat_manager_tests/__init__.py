@@ -15,6 +15,7 @@ class ElasticMock:
 class StatManagerTests(unittest.TestCase):
 
     def test_instantiate(self):
+
         statman = StatManager(SourceManager, ElasticMock)
 
         statman.run()
