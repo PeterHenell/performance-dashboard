@@ -3,6 +3,7 @@ import time
 import sys
 
 from config_manager import ConfigManager
+from stat_manager import StatManager
 
 __author__ = "Peter Henell"
 __copyright__ = "Copyright 2016, Peter Henell"
@@ -38,9 +39,8 @@ def main(arguments):
             print('Truncating all data')
             # stat_collector.cleanup(config_manager)
 
-    while True:
-        # stat_collector.run()
-        time.sleep(300)
+    stat_manager = StatManager(config_manager)
+    stat_manager.run()
 
 
 if __name__ == '__main__':

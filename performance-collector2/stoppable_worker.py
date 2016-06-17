@@ -56,3 +56,13 @@ class TimedWorker(Thread):
 
     def stop(self):
         self.stopped = True
+
+
+class LoggingWorker(Thread):
+
+    def __init__(self, func):
+        super().__init__()
+        self.func = func
+
+    def run(self):
+        print(self.func())

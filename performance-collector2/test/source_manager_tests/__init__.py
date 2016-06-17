@@ -57,7 +57,7 @@ class SourceManagerTests(unittest.TestCase):
         sm = SourceManager.from_config_manager(config_manager, delta_queue)
 
         sm.process_all_sources()
-        self.assertEquals(delta_queue.get(), [{'a': 10}])
+        self.assertEquals(delta_queue.get().rows, [{'a': 10}])
 
     def test_should_run_in_worker(self):
         delta_queue = ClosableQueue()

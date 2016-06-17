@@ -30,7 +30,7 @@ class ElasticsearchAPI:
         logger.debug(self.es.info())
 
     @staticmethod
-    def from_config_manager(self, config_manager):
+    def from_config_manager(config_manager):
         config = config_manager.get_config('Elasticsearch')
 
         return ElasticsearchAPI(config['host'],
@@ -45,7 +45,7 @@ class ElasticsearchAPI:
         db_name = calculated_delta.source.source_name
         docs = calculated_delta.delta_rows
 
-        index_name = self.get_index_names(db_name, query_name)
+        index_name = self.get_index_names(db_name)
 
         logger.debug('Pushing %s docs to index: %s' % (len(docs), index_name))
         print('Pushing %s docs to index: %s' % (len(docs), index_name))
@@ -73,13 +73,13 @@ class ElasticsearchAPI:
         db_name = source.source_name
 
         index_name = self.get_index_names(
-                db_name=db_name,
-                query_name=query_name)
+                db_name=db_name)
 
         self.create_index(index_name)
         self.set_mapping(index_name, source.query.query_name, source.query.mapping)
 
     def set_mapping(self, index_name, query_name, mapping):
+        print('Setting mapping for %s' % index_name)
         print('todo: use query mapping instead of hardcoded mapping')
         mapping = {
             "properties": {
@@ -107,9 +107,10 @@ class ElasticsearchAPI:
         logger.info('Truncating data in index: %s' % index_name)
         self.es.indices.delete(index=index_name, ignore=404)
 
-    def get_index_names(self, db_name, query_name):
-        hist = 'hist-%s-%s' % (db_name, query_name)
+    def get_index_names(self, db_name):
+        hist = 'hist-%s' % (db_name.replace('\\', '-'))
         return hist
 
     def create_index(self, index_name):
+        print('Creating index %s' % index_name)
         self.es.indices.create(index_name, ignore=400)

@@ -1,3 +1,5 @@
+from collections import OrderedDict
+
 from source import DeltaRow, DeltaField, Source
 from source_manager import SourceData
 
@@ -62,7 +64,7 @@ class StatCalculator:
         assert type(source_data) is SourceData
         calculated = CalculatedData(source_data.source)
         for row in source_data.rows:
-            assert type(row) is dict, "Each row in delta must be a dict"
+            assert type(row) is OrderedDict, "Each row in delta must be a dict"
             key_col = source_data.source.query.key_col
             row_key_value = row[key_col]
             cached_row = source_data.cache.get_row(row_key_value)
