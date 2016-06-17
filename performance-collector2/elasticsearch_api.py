@@ -88,7 +88,6 @@ class ElasticsearchAPI:
             }
         }
         for k, v in source_mapping.items():
-            # print('%s %s' % (k, v))
             mapping['properties'][k] = v
 
         self.es.indices.put_mapping(
