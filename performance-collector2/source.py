@@ -1,3 +1,5 @@
+from collections import OrderedDict
+
 from query import Query
 
 
@@ -51,7 +53,7 @@ class DataRowCache:
         :return:
         """
         cached_row = self.find_row_by_key(key_value)
-        assert type(cached_row) is dict or None
+        assert type(cached_row) is OrderedDict or None or dict
         return cached_row
 
     def find_row_by_key(self, key):
@@ -79,7 +81,6 @@ class DeltaRow:
         self.key_column_name = key_column_name
         self.timestamp = timestamp
         self.delta_fields = {}
-        self.add_field(DeltaField('timestamp', timestamp))
 
     def add_field(self, delta_field):
         assert type(delta_field) is DeltaField
@@ -87,6 +88,20 @@ class DeltaRow:
 
     def __getitem__(self, key):
         return self.delta_fields[key]
+
+    def to_dict(self):
+        d = {}
+        for name, field in self.delta_fields.items():
+            d[name + '_measured'] = field.measured
+            d['timestamp'] = self.timestamp
+            if field.delta is not None:
+                d[name + '_delta'] = field.delta
+            if field.previous is not None:
+                d[name + '_previous'] = field.previous
+        return d
+
+    def __repr__(self):
+        return self.to_dict()
 
 
 class DeltaField:
@@ -106,3 +121,6 @@ class DeltaField:
         self.measured = measured
         self.delta = delta
         self.previous = previous
+
+    def __repr__(self):
+        return

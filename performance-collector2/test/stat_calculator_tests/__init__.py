@@ -15,11 +15,11 @@ class StatsCalculatorTestCase(unittest.TestCase):
                                                         timestamp=1)
         self.assertEquals(calculated.key_column_name, 'k')
         self.assertEquals(calculated.timestamp, 1)
-        self.assertEquals(len(calculated.delta_fields), 3)
+        self.assertEquals(len(calculated.delta_fields), 2)
         self.assertEquals(calculated.delta_fields['k'].measured, 1, "delta of key should be the value of the key")
         self.assertEquals(calculated.delta_fields['k'].delta, None, "delta of key should be None")
         self.assertEquals(calculated.delta_fields['k'].previous, None)
-        self.assertEquals(calculated.delta_fields['timestamp'].measured, 1)
+        # self.assertEquals(calculated.delta_fields['timestamp'].measured, 1)
 
         self.assertEquals(calculated.delta_fields['v'].measured, 1000)
         self.assertEquals(calculated.delta_fields['v'].delta, 300)

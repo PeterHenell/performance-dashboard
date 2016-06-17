@@ -54,7 +54,7 @@ class ElasticsearchAPI:
             action = {
                 "_index": index_name,
                 "_type": query_name + '_type',
-                "_source": doc,
+                "_source": doc.to_dict(),
                 }
             actions.append(action)
         # print(actions)

@@ -16,8 +16,8 @@ class StatCalculator:
 
     @staticmethod
     def calculate_row_delta(row, cached_row, data_key_col, timestamp):
-        assert type(row) is dict
-        assert type(cached_row) is dict, "cached row must be dict even if empty"
+        assert type(row) is OrderedDict or dict
+        # assert type(cached_row) is dict, "cached row must be dict even if empty"
 
         delta_row = DeltaRow(data_key_col, timestamp)
 
@@ -65,11 +65,11 @@ class StatCalculator:
         calculated = CalculatedData(source_data.source)
         for row in source_data.rows:
             assert type(row) is OrderedDict, "Each row in delta must be a dict"
-            key_col = source_data.source.query.key_col
+            key_col = source_data.source.query.key_column
             row_key_value = row[key_col]
-            cached_row = source_data.cache.get_row(row_key_value)
+            cached_row = source_data.source.cache.get_row(row_key_value)
 
-            calculated_delta_row = StatCalculator.calculate_row_delta(row, cached_row, key_col)
+            calculated_delta_row = StatCalculator.calculate_row_delta(row, cached_row, key_col, source_data.timestamp)
             calculated.append(calculated_delta_row)
         return calculated
 

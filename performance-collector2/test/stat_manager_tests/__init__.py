@@ -15,6 +15,10 @@ class ElasticMock:
     def consume_collection(self, delta_collection):
         pass
 
+    @staticmethod
+    def from_config_manager(config_manager):
+        return ElasticMock()
+
 
 class StatManagerTests(unittest.TestCase):
 
