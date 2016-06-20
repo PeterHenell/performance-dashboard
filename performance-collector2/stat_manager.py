@@ -27,7 +27,7 @@ class StatManager:
         source_manager.load_sources(config_manager)
 
         elastic_api = elastic_api_cls.from_config_manager(config_manager)
-        elastic_api.init(source_manager.sources)
+        elastic_api.init_indexes_for(source_manager.sources)
 
         # TODO: Read wait time from config instead of using hardcoded here
         self.source_thread = TimedWorker(source_manager.process_all_sources, 60)

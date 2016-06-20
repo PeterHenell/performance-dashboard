@@ -79,6 +79,9 @@ class DeltaRow:
 
     def as_dict(self):
         d = {}
+        # Add the key col with a fixed key_name
+        # This will make it easier to group the data in kibana
+        d['key_col'] = self.delta_fields[self.key_column_name]
         for name, field in self.delta_fields.items():
             d[name + '_measured'] = field.measured
             d['timestamp'] = self.timestamp

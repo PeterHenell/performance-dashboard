@@ -62,11 +62,11 @@ class ElasticsearchAPI:
 
         return len(docs)
 
-    def init(self, sources):
+    def init_indexes_for(self, sources):
         for source in sources:
-            self.init_source(source)
+            self.init_index_for_source(source)
 
-    def init_source(self, source):
+    def init_index_for_source(self, source):
         assert type(source) is Source
         db_name = source.source_name
 
