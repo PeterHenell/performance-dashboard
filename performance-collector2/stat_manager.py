@@ -19,6 +19,9 @@ class StatManager:
                  elastic_api_cls=ElasticsearchAPI,
                  stat_calculator=StatCalculator):
 
+        collector_config = config_manager.get_config('perf-collector')
+        print('Starting collection, polling interval %s seconds' % collector_config['polling-interval-seconds'])
+
         delta_queue = ClosableQueue()
         elastic_queue = ClosableQueue()
         result_queue = ClosableQueue()
@@ -29,8 +32,9 @@ class StatManager:
         elastic_api = elastic_api_cls.from_config_manager(config_manager)
         elastic_api.init_indexes_for(source_manager.sources)
 
-        # TODO: Read wait time from config instead of using hardcoded here
-        self.source_thread = TimedWorker(source_manager.process_all_sources, 60)
+        self.source_thread = TimedWorker(
+                source_manager.process_all_sources,
+                collector_config.get_int('polling-interval-seconds'))
         self.delta_worker = StoppableWorker(stat_calculator.calculate_collection_delta, delta_queue, elastic_queue)
         self.elastic_worker = StoppableWorker(elastic_api.consume_collection, elastic_queue, result_queue)
         self.log_completed_worker = LoggingWorker(result_queue.get)

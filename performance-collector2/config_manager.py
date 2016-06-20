@@ -19,6 +19,9 @@ class Configuration:
     def __getitem__(self, key):
         return self.config_dict[key]
 
+    def get_int(self, key):
+        return int(self.config_dict[key])
+
 
 class ClassLoader:
     @staticmethod

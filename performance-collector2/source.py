@@ -79,9 +79,6 @@ class DeltaRow:
 
     def as_dict(self):
         d = {}
-        # Add the key col with a fixed key_name
-        # This will make it easier to group the data in kibana
-        d['key_col'] = self.delta_fields[self.key_column_name]
         for name, field in self.delta_fields.items():
             d[name + '_measured'] = field.measured
             d['timestamp'] = self.timestamp
@@ -89,6 +86,10 @@ class DeltaRow:
                 d[name + '_delta'] = field.delta
             if field.previous is not None:
                 d[name + '_previous'] = field.previous
+
+        # Add the key col with a fixed key_name
+        # This will make it easier to group the data in kibana
+        d['key_col'] = self.delta_fields[self.key_column_name].measured
         return d
 
     def __repr__(self):
