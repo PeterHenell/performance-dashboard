@@ -47,22 +47,26 @@ class TimedWorker(Thread):
         super().__init__()
         self.func = func
         self.delay = delay_between_processing
-        self.stopped = False
+        self.is_stopped = False
 
     def run(self):
-        while self.stopped == False:
+        while not self.is_stopped:
             self.func()
             time.sleep(self.delay)
 
     def stop(self):
-        self.stopped = True
+        self.is_stopped = True
 
 
 class LoggingWorker(Thread):
 
-    def __init__(self, func):
+    def __init__(self, func, in_queue):
         super().__init__()
         self.func = func
+        self.in_queue = in_queue
 
     def run(self):
-        print(self.func())
+        for _ in self.in_queue:
+            pass
+            # just consume the result queue for now
+            # print(self.func())

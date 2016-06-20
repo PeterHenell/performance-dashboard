@@ -37,7 +37,7 @@ class StatManager:
                 collector_config.get_int('polling-interval-seconds'))
         self.delta_worker = StoppableWorker(stat_calculator.calculate_collection_delta, delta_queue, elastic_queue)
         self.elastic_worker = StoppableWorker(elastic_api.consume_collection, elastic_queue, result_queue)
-        self.log_completed_worker = LoggingWorker(result_queue.get)
+        self.log_completed_worker = LoggingWorker(result_queue.get, result_queue)
 
         self.threads = [
             self.source_thread, self.delta_worker, self.elastic_worker, self.log_completed_worker
