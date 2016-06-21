@@ -22,6 +22,8 @@ class SourceTests(unittest.TestCase):
         s = Source(source_name='src', query=q)
 
         s.get_records()
+        # to move the values into the hot part of the cache we need to push twice
+        s.get_records()
 
         self.assertEquals(s.cache.get_row(1), {'t': 1, 'v': 55000})
         self.assertEquals(s.cache.get_row(2), {'t': 2, 'v': 11000})
@@ -33,7 +35,7 @@ class SourceTests(unittest.TestCase):
 
         actual = dr.as_dict()
         self.assertEquals(actual, {'a_measured': 'key value', 'b_measured': 100, 'b_delta': 50, 'b_previous': 75,
-                                   'timestamp': 'timestamp'})
+                                   'timestamp': 'timestamp', 'key_col': 'key value'})
 
 
 if __name__ == '__main__':

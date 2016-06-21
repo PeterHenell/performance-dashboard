@@ -19,6 +19,9 @@ class ElasticMock:
     def from_config_manager(config_manager):
         return ElasticMock()
 
+    def init_indexes_for(self, sources):
+        pass
+
 
 class StatManagerTests(unittest.TestCase):
 

@@ -51,10 +51,12 @@ class ElasticsearchAPI:
         print('Pushing %s docs to index: %s' % (len(docs), index_name))
         actions = []
         for doc in docs:
+            d = doc.as_dict()
+            d['measure_source'] = db_name
             action = {
                 "_index": index_name,
                 "_type": query_name + '_type',
-                "_source": doc.as_dict(),
+                "_source": d,
                 }
             actions.append(action)
         helpers.bulk(self.es, actions)
@@ -81,6 +83,10 @@ class ElasticsearchAPI:
                 "timestamp": {
                     "type": "date",
                     "format": "date_hour_minute_second"
+                },
+                "key_col": {
+                    "index": "not_analyzed",
+                    "type": "string"
                 }
             }
         }

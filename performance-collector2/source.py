@@ -30,7 +30,8 @@ class Source:
 
     def get_records(self):
         records = self.query.get_data()
-        self.cache.cached_records = records
+        # self.cache.cached_records = records
+        self.cache.put_records(records)
         return records
 
 
@@ -44,7 +45,13 @@ class DataRowCache:
         :param data_key_column: the name of the key in the result (ie DatabaseID)
         """
         self.cached_records = []
+        self.current_records = []
         self.data_key_column = data_key_column
+
+    def put_records(self, records):
+        # use two variables as a mini-queue where the cache will always be one step behind the put:ed records
+        self.cached_records = self.current_records
+        self.current_records = records
 
     def get_row(self, key_value):
         """

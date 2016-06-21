@@ -7,7 +7,7 @@ from stoppable_worker import ClosableQueue, StoppableWorker, TimedWorker, Loggin
 class StatManager:
     """
     Coordinates the threads and queues used to get data from the sources and consume them in elastic search.
-    
+
     """
 
     def __init__(self, config_manager,
