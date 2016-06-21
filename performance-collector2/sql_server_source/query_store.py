@@ -268,9 +268,10 @@ class QueryStore:
                    -- PerfCollector
                 SELECT  'dm_os_performance_counters'  AS key_col
                     , [Page life expectancy] AS [Page_life_expectancy]
-                    , CAST([Buffer cache hit ratio] AS DECIMAL(28, 6)) / CAST([Buffer cache hit ratio base] AS DECIMAL(28, 6)) AS [Cache_Hit_Ratio]
+                    , CAST([Buffer cache hit ratio] AS DECIMAL(28, 6)) / CAST([Buffer cache hit ratio base] AS DECIMAL(28, 6)) * 100.000 AS [Cache_Hit_Ratio]
+                    , [Database pages] AS [Buffered_Data_Pages]
                     , CAST([Average Wait Time (ms)] AS DECIMAL(28, 6)) / CAST([Average Wait Time Base] AS DECIMAL(28, 6)) AS [Avarage_Lock_Wait_Time]
-                    , CAST([CPU usage %] AS DECIMAL(28, 6)) / CAST([CPU usage % base] AS DECIMAL(28, 6)) AS [CPU_Usage_Pcnt]
+                    , CAST([CPU usage %] AS DECIMAL(28, 6)) / CAST([CPU usage % base] AS DECIMAL(28, 6)) * 100.000 AS [CPU_Usage_Pcnt]
                     , CAST([Avg Disk Read IO (ms)] AS DECIMAL(28, 6)) / CAST([Avg Disk Read IO (ms) base] AS DECIMAL(28, 6)) AS [Avg_Disk_Read_IO_ms]
                     , CAST([Avg Disk Write IO (ms)] AS DECIMAL(28, 6)) / CAST([Avg Disk Write IO (ms) Base] AS DECIMAL(28, 6)) AS [Avg_Disk_Write_IO_ms]
                     , [Page lookups/sec] AS [Page_lookups_per_sec]
@@ -289,6 +290,7 @@ class QueryStore:
                     , [Batch Requests/sec] AS [Batch_Requests_per_sec]
                     , [Full Scans/sec] AS [Full_Scans_per_sec]
                     , [Page Splits/sec] AS [Page_Splits_per_sec]
+                    , [Active Temp Tables] AS [Active_Temp_Tables]
                     FROM
                     (
                         SELECT cntr_value, RTRIM(counter_name) AS counter_name
@@ -302,7 +304,7 @@ class QueryStore:
                              OR
                             (object_name = 'SQLServer:Resource Pool Stats' AND counter_name IN('Avg Disk Write IO (ms)', 'Avg Disk Write IO (ms) Base') AND instance_name = 'default')
                              OR
-                            (object_name = 'SQLServer:Buffer Manager' AND counter_name IN('Buffer cache hit ratio', 'Buffer cache hit ratio base'))
+                            (object_name = 'SQLServer:Buffer Manager' AND counter_name IN('Buffer cache hit ratio', 'Buffer cache hit ratio base', 'Database pages'))
                              OR
                             (object_name = 'SQLServer:Access Methods' AND counter_name IN('Full Scans/sec', 'Page Splits/sec'))
                             OR
@@ -313,6 +315,9 @@ class QueryStore:
                                                 'Free list stalls/sec',
                                                 'Number of Deadlocks/sec', 'SQL Compilations/sec', 'SQL Re-Compilations/sec',
                                                 'Batch Requests/sec', 'Buffer cache hit ratio base', 'Page life expectancy')
+                            )
+                            OR
+                            (object_name = 'SQLServer:General STATISTICS' AND RTRIM(counter_name) = 'Active Temp Tables'
                             )
                     ) src
                     PIVOT (
@@ -326,6 +331,7 @@ class QueryStore:
                                             , [Batch Requests/sec]
                                             , [Buffer cache hit ratio base]
                                             , [Buffer cache hit ratio]
+                                            , [Database pages]
                                             , [CPU usage % base]
                                             , [CPU usage %]
                                             , [Free list stalls/sec]
@@ -342,6 +348,7 @@ class QueryStore:
                                             , [Page life expectancy]
                                             , [Full Scans/sec]
                                             , [Page Splits/sec]
+                                            , [Active Temp Tables]
                                             )
                         ) AS pivoted"""
         key_col = 'key_col'
