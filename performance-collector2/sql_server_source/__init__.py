@@ -8,15 +8,16 @@ from sql_server_source.query_store import QueryStore
 
 
 class SQLExecutor:
-    def __init__(self, query_text, conn):
+    def __init__(self, query_text, get_connection):
         self.query_text = query_text
-        self.conn = conn
+        self.get_connection = get_connection
 
     def __call__(self, *args, **kwargs):
         return self.get_records(self.query_text)
 
     def get_records(self, sql):
-        cur = self.conn.cursor()
+        conn = self.get_connection()
+        cur = conn.cursor()
         cur.execute(sql)
 
         column_names = [column[0] for column in cur.description]
@@ -26,13 +27,16 @@ class SQLExecutor:
         DBRecord = namedtuple('DBRecord', column_names)
         res = [r for r in map(DBRecord._make, rows)]
 
+        conn.commit()
+        conn.close()
+
         return [r._asdict() for r in res]
 
 
 class SQLServerSource:
     def __init__(self):
-        self.conn = None
         self.query_store = QueryStore()
+        self.config = None
 
     def get_sources(self, config):
         """
@@ -41,12 +45,10 @@ class SQLServerSource:
         :param config: the config dictionary to use to initialize the source.
         :return: a list of Sources with their query set, connected and ready to go.
         """
-
-        # TODO: as long as things are seriel then we can share the connection
-        self.conn = SQLServerSource.get_connection(config)
+        self.config = config
         sources = []
         for sqlQry in self.query_store.queries:
-            executor = SQLExecutor(sqlQry.query_text, self.conn)
+            executor = SQLExecutor(sqlQry.query_text, lambda: SQLServerSource.get_connection(self.config))
             q = Query(key_column=sqlQry.key_column,
                       query_name=sqlQry.query_name,
                       mapping={},
@@ -67,5 +69,3 @@ class SQLServerSource:
         # logger.info("Connected")
 
         return connection
-
-
