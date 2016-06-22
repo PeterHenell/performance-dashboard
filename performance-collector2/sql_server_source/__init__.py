@@ -16,21 +16,24 @@ class SQLExecutor:
         return self.get_records(self.query_text)
 
     def get_records(self, sql):
-        conn = self.get_connection()
-        cur = conn.cursor()
-        cur.execute(sql)
+        try:
+            with self.get_connection() as conn:
+                with conn.cursor() as cur:
+                    cur.execute(sql)
 
-        column_names = [column[0] for column in cur.description]
-        rows = cur.fetchall()
-        cur.close()
+                    column_names = [column[0] for column in cur.description]
+                    rows = cur.fetchall()
 
-        DBRecord = namedtuple('DBRecord', column_names)
-        res = [r for r in map(DBRecord._make, rows)]
+                    DBRecord = namedtuple('DBRecord', column_names)
+                    res = [r for r in map(DBRecord._make, rows)]
 
-        conn.commit()
-        conn.close()
+                    return [r._asdict() for r in res]
 
-        return [r._asdict() for r in res]
+        except pypyodbc.Error as er:
+            print('Error during SQLExecutor.get_records executing %s' % sql)
+            print('The error was %s' % er)
+
+        return []
 
 
 class SQLServerSource:
