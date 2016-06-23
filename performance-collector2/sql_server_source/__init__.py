@@ -68,7 +68,7 @@ class SQLServerSource:
                             % (config['host'], config['database'], config['username'], config['password'])
 
         # logger.info('Connecting to %s@%s.%s',  config['username'], config['host'], config['database'])
-        connection = pypyodbc.connect(connection_string)
+        connection = pypyodbc.connect(connection_string, readonly=True)
         # logger.info("Connected")
 
         return connection
