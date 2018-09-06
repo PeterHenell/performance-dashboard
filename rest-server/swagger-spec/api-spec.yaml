@@ -1,0 +1,164 @@
+swagger: "2.0"
+info:
+  description: "Performance Indicator Collection Service"
+  version: "1.0.0"
+  title: "PICS"
+  
+  contact:
+    email: "peter.henell@pics.se"
+  license:
+    name: "Apache 2.0"
+    url: "http://www.apache.org/licenses/LICENSE-2.0.html"
+host: "localhost"
+basePath: "/pics/v2"
+tags:
+- name: "kpi"
+  description: "measurements of your things"
+schemes:
+- "https"
+- "http"
+paths:
+  /kpi:
+    post:
+      tags:
+      - "kpi"
+      summary: "Add a new kpi to the store"
+      description: ""
+      operationId: "addKpi"
+      consumes:
+      - "application/json"
+      - "application/xml"
+      produces:
+      - "application/xml"
+      - "application/json"
+      parameters:
+      - in: "body"
+        name: "body"
+        description: "KPI that needs to be added to the store"
+        required: true
+        schema:
+          $ref: "#/definitions/execution"
+      responses:
+        405:
+          description: "Invalid input"
+      security:
+      - kpi_auth:
+        - "write:kpi"
+        - "read:kpi"
+ 
+securityDefinitions:
+  kpi_auth:
+    type: "oauth2"
+    authorizationUrl: "http://petstore.swagger.io/oauth/dialog"
+    flow: "implicit"
+    scopes:
+      write:kpi: "modify kpis in"
+      read:kpi: "read kpis"
+  api_key:
+    type: "apiKey"
+    name: "api_key"
+    in: "header"
+
+definitions:
+  server:
+    type: "object"
+    properties:
+      name:
+        type: "string"
+        description: Humanly readable Unique name of the server
+      host-name: 
+        type: "string"
+        description: physical name of the server
+      description:
+        type: "string"
+        description: describe your server briefly
+  
+  system:
+    type: "object"
+    properties:
+      name: 
+        type: "string"
+        description: name of the system
+      servers:
+        type: array
+        items:
+          $ref: "#/definitions/server"
+  execution-unit:
+    type: "object"
+    properties:
+      id:
+        type: "string"
+        description: unique identifying name or id of the execution
+      parent:
+        type: "string"
+        description: name of the parent eu if any
+    
+  execution:
+    type: "object"
+    description: one execution of an execution unit
+    properties: 
+      eu:
+        type: "string"
+        description: name of the eu which this measurement is about
+      id:
+        type: "string"
+        description: unique id of this execution
+      started_at:
+        type: "string"
+        description: point in time when eu started execution
+      ended_at: 
+        type: "string"
+        description: point in time when eu ended the execution
+      processed:
+        type: integer
+        format: int64
+        description: number of things this eu processed (rows for databases)
+
+  measurement:
+    type: "object"
+    description: point in time measurement of a single value unrelated to a perticular eu
+    properties:
+      uts: 
+        type: "string"
+        description: unix time stamp when measurement was taken
+      measure_key:
+        type: "string"
+        description: unique identifer of what was measured.
+      measure_value:
+        type: integer
+        description: value of measurement
+      measure_value_domain:
+        type: string
+        description: describes the unit of the measure_value
+        example: ms, milliseconds, rows, CPU-hours
+      server:
+        type: string
+        description: name of server from where measurement was taken
+      application:
+        type: string
+        description: name of application for which measurement refers to
+      module:
+        type: string
+        description: name of module for which measurement refers to, subcategory of application
+
+  execution-measurement:      
+      type: "object"
+      properties:
+        eu_id: 
+          type: string
+          description: id of execution which this measurement refers to
+        uts: 
+          type: "string"
+          description: unix time stamp when measurement was taken
+        measure_key:
+          type: "string"
+          description: unique identifer of what was measured.
+        measure_value:
+          type: integer
+          description: value of measurement
+        measure_value_domain:
+          type: string
+          description: describes the unit of the measure_value
+          example: ms, milliseconds, rows, CPU-hours
+
+
