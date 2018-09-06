@@ -18,7 +18,7 @@ schemes:
 - "https"
 - "http"
 paths:
-  /kpi:
+  /execution:
     post:
       tags:
       - "kpi"
@@ -32,6 +32,19 @@ paths:
       - "application/xml"
       - "application/json"
       parameters:
+      - name: "server"
+        in: query
+        type: string
+        description: name of server from where measurement was taken
+      - name: "application"
+        type: string
+        in: query
+        description: name of application for which measurement refers to
+      - name: "module"
+        type: string
+        in: query
+        description: name of module for which measurement refers to, subcategory of application
+
       - in: "body"
         name: "body"
         description: "KPI that needs to be added to the store"
@@ -109,10 +122,14 @@ definitions:
       ended_at: 
         type: "string"
         description: point in time when eu ended the execution
-      processed:
+      consumed:
         type: integer
         format: int64
-        description: number of things this eu processed (rows for databases)
+        description: number of things this eu took as input (readrows for databases)
+      produced:
+        type: integer
+        format: int64
+        description: number of things this eu produced (inserted rows for databases)
 
   measurement:
     type: "object"
@@ -121,25 +138,16 @@ definitions:
       uts: 
         type: "string"
         description: unix time stamp when measurement was taken
-      measure_key:
+      key:
         type: "string"
         description: unique identifer of what was measured.
-      measure_value:
+      value:
         type: integer
         description: value of measurement
-      measure_value_domain:
+      domain:
         type: string
         description: describes the unit of the measure_value
         example: ms, milliseconds, rows, CPU-hours
-      server:
-        type: string
-        description: name of server from where measurement was taken
-      application:
-        type: string
-        description: name of application for which measurement refers to
-      module:
-        type: string
-        description: name of module for which measurement refers to, subcategory of application
 
   execution-measurement:      
       type: "object"
